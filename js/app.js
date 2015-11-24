@@ -13,17 +13,25 @@ function generateHeroes(){
     'images/char-pink-girl.png',
     'images/char-horn-girl.png',
     'images/char-cat-girl.png']
-    // We initialize a
-    var displayPositions = [[202, 202],
-    [404, 202],
-    [202, 404],
-    [404, 404]]
 
+    // We initialize an array with the display positions
+    var displayPositions = [new Vector(80, 40),
+    new Vector(197, 40),
+    new Vector(314, 40),
+    new Vector(431, 40)]
+
+    // We populate an array with the available players
     var avaPlayers = [];
     avaImages.forEach(function(image){
         player = new Player(image);
-
+        avaPlayers.push(player);
     });
+    // We set their display positions
+    for (var i = 0; i < avaPlayers.length; i++){
+        avaPlayers[i].pos.setX(displayPositions[i].getX());
+        avaPlayers[i].pos.setY(displayPositions[i].getY());
+    }
+    return avaPlayers;
 };
 
 
@@ -117,36 +125,28 @@ Enemy.prototype.render = function() {
 // a handleInput() method.
 
 var Player = function(image){
-    // this.sprite = 'images/char-pink-girl.png';
     this.sprite = image;
-    this.startPos = new Vector(404, 644);
+    var startPos = new Vector(402, 652);
+    this.pos = startPos;
     // var startX = 404;
     // var startY = 644;
     // this.x = startX;
     // this.y = startY;
 };
 
-Player.prototype.update = function(dt){
-
-};
-
 Player.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-};
-
-Player.prototype.update = function(dt){
-
+    ctx.drawImage(Resources.get(this.sprite), this.pos.getX(), this.pos.getY());
 };
 
 Player.prototype.handleInput = function(code){
-    if (code === 'left' && this.x > 0){
-        this.x -= 101;
-    }else if (code === 'up' && this.y > 0){
-        this.y -= 83;
-    }else if (code === 'right' && this.x < 1110){
-        this.x += 101;
-    }else if (code === "down" && this.y < 894){
-        this.y += 83;
+    if (code === 'left' && this.pos.getX() > 0){
+        this.pos.setX(this.pos.getX()-101);
+    }else if (code === 'up' && this.pos.getY() > 0){
+        this.pos.setY(this.pos.getY()-83);
+    }else if (code === 'right' && this.pos.getX() < 1108){
+        this.pos.setX(this.pos.getX()+101);
+    }else if (code === "down" && this.pos.getY() < 902){
+        this.pos.setY(this.pos.getY()+83);
     }
 };
 
@@ -155,7 +155,7 @@ Player.prototype.handleInput = function(code){
 // Place the player object in a variable called player
 allEnemies = [new Enemy(-101,143,20,1.01), new Enemy(-101,60,20,1), new Enemy(-101,226,20,1)];
 
-player = new Player();
+player = new Player('images/char-pink-girl.png');
 
 
 

@@ -125,7 +125,6 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update();
     }
 
     /* This function initially draws the "game level", it will then call
@@ -210,18 +209,31 @@ var Engine = (function(global) {
      * In our case, this function will initialize the game.
      */
     function reset() {
+        // We first store the available heroes in a variable and display them
+        var heroes = generateHeroes();
+        heroes.forEach(function(heroe){
+            heroe.render();
+            console.log(heroe);
+        })
         // We first choose the character
 
         // We display the chosen character
 
         // We require to press space to initialize main()
-        ctx.font = "24px Helvetica";
+        ctx.font = "28px Helvetica";
         ctx.fillStyle = "black";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("Use left and right arrow keys to choose your hero", 303, 453);
-        ctx.font = "28px Helvetica";
-        ctx.fillText("Press SPACE to start when you are ready", 303, 498);
+        ctx.fillText("Use arrow keys to choose your hero", 303, 50);
+        ctx.textAlign = "center";
+        ctx.fillText("YOUR MISSION:", 303, 280);
+        ctx.fillText("Bring gems to the princess.", 303, 320);
+        ctx.fillText("As many as you can.", 303, 360);
+        ctx.fillText("Avoid water.", 303, 400);
+        ctx.fillText("Avoid the bastards.", 303, 440);
+        ctx.font = "40px Helvetica";
+        ctx.textAlign = "center";
+        ctx.fillText("Press SPACE to start", 303, 515);
         doc.addEventListener('keydown', function(event){
             if (event.keyCode === 32){
                 lastTime = Date.now();
