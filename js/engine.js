@@ -27,6 +27,8 @@ var Engine = (function(global) {
     // We implement a variable to keep track of the score and the lives
     var lives = 3;
     var score = 0;
+    canvas.style.border = "1px solid black";
+    canvas.style.borderRadius = "5px";
     canvas.width = 606;
     canvas.height = 606;
     doc.body.appendChild(canvas);
@@ -67,9 +69,12 @@ var Engine = (function(global) {
      * game loop.
      */
     function init() {
+        // // We scale everything to 0.5, this will allow us to draw smaller graphics without
+        // // having to scale the images everytime we draw one.
+        // ctx.scale(0.5, 0.5);
         reset();
-        lastTime = Date.now();
-        main();
+        // lastTime = Date.now();
+        // main();
     }
 
     /* This function is called by main (our game loop) and itself calls all
@@ -90,8 +95,8 @@ var Engine = (function(global) {
     function checkCollisions(){
         allEnemies.forEach(function(enemy){
             if (Math.abs(enemy.x - player.x)<80 && Math.abs(enemy.y - player.y)<60){
-                player.x = 202;
-                player.y = 322;
+                player.x = 404;
+                player.y = 644;
                 lives -= 1;
                 if (lives <= 0){
                     console.log("game over")
@@ -101,9 +106,9 @@ var Engine = (function(global) {
     }
 
     function checkGameWon(){
-        if (player.y < 40){
-            player.x = 202;
-            player.y = 322;
+        if (player.y < 20){
+            player.x = 404;
+            player.y = 644;
             score = score + 50
             console.log(score)
         }
@@ -153,15 +158,7 @@ var Engine = (function(global) {
         });
 
 
-        var rowImages = [
-                'images/water-block.png',   // Top row is water
-                'images/stone-block.png',   // Row 1 of 3 of stone
-                'images/stone-block.png',   // Row 2 of 3 of stone
-                'images/stone-block.png',   // Row 3 of 3 of stone
-                'images/grass-block.png',   // Row 1 of 2 of grass
-                'images/grass-block.png'    // Row 2 of 2 of grass
-            ],
-            numRows = mapLevels.length,
+        var numRows = mapLevels.length,
             numCols = mapLevels[0].length,
             row, col;
 
@@ -183,7 +180,7 @@ var Engine = (function(global) {
             }
         }
         // We draw the score in the top right of the screen
-        ctx.font = "28px Georgia";
+        ctx.font = "56px Helvetica";
         ctx.fillStyle = "white";
         ctx.fillText("Score: "+score, 450, 100);
         ctx.fillText("Lives: "+lives, 40, 100);
@@ -210,10 +207,34 @@ var Engine = (function(global) {
     /* This function does nothing but it could have been a good place to
      * handle game reset states - maybe a new game menu or a game over screen
      * those sorts of things. It's only called once by the init() method.
+     * In our case, this function will initialize the game.
      */
     function reset() {
-        // noop
+        // We first choose the character
+
+        // We display the chosen character
+
+        // We require to press space to initialize main()
+        ctx.font = "24px Helvetica";
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("Use left and right arrow keys to choose your hero", 303, 453);
+        ctx.font = "28px Helvetica";
+        ctx.fillText("Press SPACE to start when you are ready", 303, 498);
+        doc.addEventListener('keydown', function(event){
+            if (event.keyCode === 32){
+                lastTime = Date.now();
+                // We now scale everything to 0.5, this will allow us
+                // to draw smaller graphics without having to scale the
+                // images everytime we draw one.
+                ctx.scale(0.5, 0.5);
+                main();
+            }
+        })
     }
+
+
 
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
@@ -224,7 +245,10 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/char-pink-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-cat-girl.png'
     ]);
     Resources.onReady(init);
 

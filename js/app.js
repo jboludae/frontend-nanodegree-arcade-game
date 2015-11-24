@@ -1,3 +1,79 @@
+/*---------AVAILABLE HEROES-----------------------*/
+
+/* We first take care of displaying the heroes in the
+* "Welcome page". The idea is to display all heroes available.
+* The player can choose one of them and then press SPACE.
+* this function will be used by our "RESET" function */
+
+
+
+function generateHeroes(){
+    // We initialize an array with our hero images
+    var avaImages = ['images/char-boy.png',
+    'images/char-pink-girl.png',
+    'images/char-horn-girl.png',
+    'images/char-cat-girl.png']
+    // We initialize a
+    var displayPositions = [[202, 202],
+    [404, 202],
+    [202, 404],
+    [404, 404]]
+
+    var avaPlayers = [];
+    avaImages.forEach(function(image){
+        player = new Player(image);
+
+    });
+};
+
+
+
+
+/*-------------------VECTOR CLASS-----------------*/
+/* We first initialize a helper class that will
+* help us keep track of positions
+* keep in mind that to go from square to square
+* X has to vary in 101 units and Y has to vary
+* in 83 units */
+
+var Vector = function(x,y){
+    this.x = x;
+    this.y = y;
+}
+
+/* This two function help us retrieve the x
+and y values of a vector*/
+
+Vector.prototype.getX = function(){
+    return this.x;
+}
+Vector.prototype.getY = function(){
+    return this.y;
+}
+
+/* This two function help us set the x
+and y values of a vector*/
+
+Vector.prototype.setX = function(x){
+    this.x = x;
+}
+Vector.prototype.setY = function(y){
+    this.y = y;
+}
+
+/* This function multiplies a vector by
+a given factor */
+Vector.prototype.scale = function(factor){
+    this.x = this.x * factor;
+    this.y = this.y * factor;
+}
+
+Vector.prototype.sum = function(other){
+    this.x = this.x + other.getX();
+    this.y = this.y + other.getY();
+}
+
+
 // Enemies our player must avoid
 var Enemy = function(x,y,speed,acceleration) {
     // Variables applied to each of our instances go here,
@@ -21,7 +97,7 @@ Enemy.prototype.update = function(dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
-    var width = document.querySelector("canvas").width;
+    var width = 2*document.querySelector("canvas").width;
     if (this.x > width){
         this.x = this.startX;
         this.speed = this.startSpeed;
@@ -40,12 +116,14 @@ Enemy.prototype.render = function() {
 // This class requires an update(), render() and
 // a handleInput() method.
 
-var Player = function(){
-    this.sprite = 'images/char-boy.png';
-    var startX = 202;
-    var startY = 322;
-    this.x = startX;
-    this.y = startY;
+var Player = function(image){
+    // this.sprite = 'images/char-pink-girl.png';
+    this.sprite = image;
+    this.startPos = new Vector(404, 644);
+    // var startX = 404;
+    // var startY = 644;
+    // this.x = startX;
+    // this.y = startY;
 };
 
 Player.prototype.update = function(dt){
@@ -65,9 +143,9 @@ Player.prototype.handleInput = function(code){
         this.x -= 101;
     }else if (code === 'up' && this.y > 0){
         this.y -= 83;
-    }else if (code === 'right' && this.x < 505){
+    }else if (code === 'right' && this.x < 1110){
         this.x += 101;
-    }else if (code === "down" && this.y < 405){
+    }else if (code === "down" && this.y < 894){
         this.y += 83;
     }
 };
@@ -98,12 +176,19 @@ document.addEventListener('keydown', function(e) {
 loaded by the engine as we progress through the levels */
 
 var mapLevels =
-[["w","w","w","w","w","w"],
-["s","s","s","s","s","s"],
-["s","s","s","s","s","s"],
-["s","s","s","s","s","s"],
-["g","g","s","g","s","g"],
-["g","g","g","g","g","g"]];
+[["w","w","w","w","w","w","w","w","w","w","w","w","w","w"],
+["s","s","s","s","s","s","s","w","w","w","w","w","w","w"],
+["s","s","s","s","s","s","s","w","w","w","w","w","w","w"],
+["s","s","s","s","s","s","s","w","w","w","w","w","w","w"],
+["g","g","s","g","s","g","g","w","w","w","w","w","w","w"],
+["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
+["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
+["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
+["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
+["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
+["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
+["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
+["g","g","g","g","g","g","g","w","w","w","w","w","w","w"]];
 
 
 
