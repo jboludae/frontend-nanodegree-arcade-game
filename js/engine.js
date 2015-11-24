@@ -24,14 +24,17 @@ var Engine = (function(global) {
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
         lastTime;
-
-    canvas.width = 505;
+    // We implement a variable to keep track of the score and the lives
+    var lives = 3;
+    var score = 0;
+    canvas.width = 606;
     canvas.height = 606;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
      */
+
     function main() {
         /* Get our time delta information which is required if your game
          * requires smooth animation. Because everyone's computer processes
@@ -80,7 +83,30 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkCollisions();
+        checkGameWon();
+    }
+
+    function checkCollisions(){
+        allEnemies.forEach(function(enemy){
+            if (Math.abs(enemy.x - player.x)<80 && Math.abs(enemy.y - player.y)<60){
+                player.x = 202;
+                player.y = 322;
+                lives -= 1;
+                if (lives <= 0){
+                    console.log("game over")
+                }
+            };
+        })
+    }
+
+    function checkGameWon(){
+        if (player.y < 40){
+            player.x = 202;
+            player.y = 322;
+            score = score + 50
+            console.log(score)
+        }
     }
 
     /* This is called by the update function  and loops through all of the
@@ -107,6 +133,26 @@ var Engine = (function(global) {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
+        var charToImages = {
+            "w": 'images/water-block.png',
+            "s": 'images/stone-block.png',
+            "r": 'images/Rock.png',
+            "g": "images/grass-block.png"
+        }
+        /* We inititialize a base map. We will use mapLevels to feed this map
+        and charToImages to code characters to actual images */
+        var baseMap = [];
+
+        mapLevels.forEach(function(row){
+            var line = [];
+            row.forEach(function(char){
+                var element = charToImages[char];
+                line.push(element);
+            });
+            baseMap.push(line);
+        });
+
+
         var rowImages = [
                 'images/water-block.png',   // Top row is water
                 'images/stone-block.png',   // Row 1 of 3 of stone
@@ -115,8 +161,8 @@ var Engine = (function(global) {
                 'images/grass-block.png',   // Row 1 of 2 of grass
                 'images/grass-block.png'    // Row 2 of 2 of grass
             ],
-            numRows = 6,
-            numCols = 5,
+            numRows = mapLevels.length,
+            numCols = mapLevels[0].length,
             row, col;
 
         /* Loop through the number of rows and columns we've defined above
@@ -132,9 +178,15 @@ var Engine = (function(global) {
                  * so that we get the benefits of caching these images, since
                  * we're using them over and over.
                  */
-                ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
+                var image = baseMap[row][col];
+                ctx.drawImage(Resources.get(image), col * 101, row * 83);
             }
         }
+        // We draw the score in the top right of the screen
+        ctx.font = "28px Georgia";
+        ctx.fillStyle = "white";
+        ctx.fillText("Score: "+score, 450, 100);
+        ctx.fillText("Lives: "+lives, 40, 100);
 
 
         renderEntities();
@@ -182,3 +234,4 @@ var Engine = (function(global) {
      */
     global.ctx = ctx;
 })(this);
+
