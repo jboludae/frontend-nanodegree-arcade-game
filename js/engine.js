@@ -24,9 +24,10 @@ var Engine = (function(global) {
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
         lastTime;
-    // We implement a variable to keep track of the score and the lives
-    var lives = 3;
-    var score = 0;
+
+
+    // We draw the canvas
+
     canvas.style.border = "1px solid black";
     canvas.style.borderRadius = "5px";
     canvas.width = 606;
@@ -35,7 +36,8 @@ var Engine = (function(global) {
 
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
-     */
+     * it will keep track of the game state via if-else statements
+     * and direct us to the appropriate functions.*/
 
     function main() {
         /* Get our time delta information which is required if your game
@@ -44,37 +46,77 @@ var Engine = (function(global) {
          * would be the same for everyone (regardless of how fast their
          * computer is) - hurray time!
          */
-        var now = Date.now(),
+        if (runningGame === true){
+            var now = Date.now(),
             dt = (now - lastTime) / 1000.0;
+            /*Save the current transformation state
+            * and scale everything 0.5 times. This will allow
+            *us to have smaller graphics without having to scale
+            *images*/
+            ctx.save();
+            ctx.scale(0.5,0.5);
+            /* Call our update/render functions, pass along the time delta to
+             * our update function since it may be used for smooth animation.
+             */
+            update(dt);
+            render();
 
-        /* Call our update/render functions, pass along the time delta to
-         * our update function since it may be used for smooth animation.
-         */
-        update(dt);
-        render();
-
-        /* Set our lastTime variable which is used to determine the time delta
-         * for the next time this function is called.
-         */
-        lastTime = now;
-
+            /* Set our lastTime variable which is used to determine the time delta
+             * for the next time this function is called.
+             */
+            lastTime = now;
+            /* We restore the context so it will not re-scale in an
+            *infinite loop*/
+            ctx.restore();
+        }else if(welcomePage === true){
+            displayWelcome();
+        }
         /* Use the browser's requestAnimationFrame function to call this
-         * function again as soon as the browser is able to draw another frame.
-         */
+        * function again as soon as the browser is able to draw another frame.
+        */
         win.requestAnimationFrame(main);
     }
 
     /* This function does some initial setup that should only occur once,
      * particularly setting the lastTime variable that is required for the
-     * game loop.
+     * game loop and initializing a selector for the welcome page.
      */
     function init() {
-        // // We scale everything to 0.5, this will allow us to draw smaller graphics without
-        // // having to scale the images everytime we draw one.
-        // ctx.scale(0.5, 0.5);
-        reset();
-        // lastTime = Date.now();
-        // main();
+        initializeSelector();
+        heroes = generateHeroes(); // generates a list of available heroes
+        lastTime = Date.now();
+        main();
+    }
+
+    function displayWelcome() {
+    // We first clean the background of the whole canvas
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // We first clean the background of the whole canvas
+    selector.render();
+    heroes.forEach(function(heroe){
+        heroe.render();
+    })
+    // We first choose the character
+    // We display the chosen character
+
+    // We require to press space to initialize main()
+    // We display welcome text and instructions
+
+    ctx.font = "28px Helvetica";
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Use arrow keys to choose your hero", 303, 50);
+    ctx.textAlign = "center";
+    ctx.fillText("YOUR MISSION:", 303, 280);
+    ctx.fillText("Bring gems to the princess.", 303, 320);
+    ctx.fillText("Avoid water.", 303, 360);
+    ctx.fillText("Avoid the bastards.", 303, 400);
+    ctx.fillText("", 303, 440);
+    ctx.font = "40px Helvetica";
+    ctx.textAlign = "center";
+    ctx.fillText("Press SPACE to start", 303, 515);
     }
 
     /* This function is called by main (our game loop) and itself calls all
@@ -137,6 +179,8 @@ var Engine = (function(global) {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         var charToImages = {
             "w": 'images/water-block.png',
             "s": 'images/stone-block.png',
@@ -183,8 +227,6 @@ var Engine = (function(global) {
         ctx.fillStyle = "white";
         ctx.fillText("Score: "+score, 450, 100);
         ctx.fillText("Lives: "+lives, 40, 100);
-
-
         renderEntities();
     }
 
@@ -200,7 +242,7 @@ var Engine = (function(global) {
             enemy.render();
         });
 
-        player.render();
+        heroe.render();
     }
 
     /* This function does nothing but it could have been a good place to
@@ -208,43 +250,7 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      * In our case, this function will initialize the game.
      */
-    function reset() {
-        // We first store the available heroes in a variable and display them
-        var heroes = generateHeroes();
-        heroes.forEach(function(heroe){
-            heroe.render();
-            console.log(heroe);
-        })
-        // We first choose the character
 
-        // We display the chosen character
-
-        // We require to press space to initialize main()
-        ctx.font = "28px Helvetica";
-        ctx.fillStyle = "black";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("Use arrow keys to choose your hero", 303, 50);
-        ctx.textAlign = "center";
-        ctx.fillText("YOUR MISSION:", 303, 280);
-        ctx.fillText("Bring gems to the princess.", 303, 320);
-        ctx.fillText("As many as you can.", 303, 360);
-        ctx.fillText("Avoid water.", 303, 400);
-        ctx.fillText("Avoid the bastards.", 303, 440);
-        ctx.font = "40px Helvetica";
-        ctx.textAlign = "center";
-        ctx.fillText("Press SPACE to start", 303, 515);
-        doc.addEventListener('keydown', function(event){
-            if (event.keyCode === 32){
-                lastTime = Date.now();
-                // We now scale everything to 0.5, this will allow us
-                // to draw smaller graphics without having to scale the
-                // images everytime we draw one.
-                ctx.scale(0.5, 0.5);
-                main();
-            }
-        })
-    }
 
 
 
@@ -260,7 +266,8 @@ var Engine = (function(global) {
         'images/char-boy.png',
         'images/char-pink-girl.png',
         'images/char-horn-girl.png',
-        'images/char-cat-girl.png'
+        'images/char-cat-girl.png',
+        'images/selector.png'
     ]);
     Resources.onReady(init);
 

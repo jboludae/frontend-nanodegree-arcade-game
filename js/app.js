@@ -1,11 +1,27 @@
+
+/*---------GLOBAL VARIABLES-----------------------*/
+// We define some additional variables that will define the "state" of the game
+var welcomePage = true; // welcome page. We select our hero and press SPACE  to start game
+var runningGame = false; // game runs at current level
+var levelWon = false; // level is won, we display some things and require "space" to continue
+var gameWon = false; // game is won, we display winning screen
+var gameLost = false; // game is lost, we display losing screen
+
+// We implement some variables and instanced that have to be available
+// globally
+var lives = 3;
+var score = 0;
+var heroe;
+var heroes;
+var selector;
+
+
 /*---------AVAILABLE HEROES-----------------------*/
 
 /* We first take care of displaying the heroes in the
 * "Welcome page". The idea is to display all heroes available.
 * The player can choose one of them and then press SPACE.
 * this function will be used by our "RESET" function */
-
-
 
 function generateHeroes(){
     // We initialize an array with our hero images
@@ -15,10 +31,10 @@ function generateHeroes(){
     'images/char-cat-girl.png']
 
     // We initialize an array with the display positions
-    var displayPositions = [new Vector(80, 40),
-    new Vector(197, 40),
-    new Vector(314, 40),
-    new Vector(431, 40)]
+    var displayPositions = [new Vector(80, 60),
+    new Vector(197, 60),
+    new Vector(314, 60),
+    new Vector(431, 60)]
 
     // We populate an array with the available players
     var avaPlayers = [];
@@ -33,6 +49,9 @@ function generateHeroes(){
     }
     return avaPlayers;
 };
+
+/* We now create a "hero selector" that will allow us
+*select our hero in the welcome page*/
 
 
 
@@ -120,6 +139,7 @@ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
+/*---------PLAYER CLASS-----------------------*/
 // Now write your own player class
 // This class requires an update(), render() and
 // a handleInput() method.
@@ -128,10 +148,6 @@ var Player = function(image){
     this.sprite = image;
     var startPos = new Vector(402, 652);
     this.pos = startPos;
-    // var startX = 404;
-    // var startY = 644;
-    // this.x = startX;
-    // this.y = startY;
 };
 
 Player.prototype.render = function() {
@@ -150,26 +166,70 @@ Player.prototype.handleInput = function(code){
     }
 };
 
+/*---------SELECTOR CLASS-----------------------*/
+
+var Selector = function(){
+    this.sprite = 'images/selector.png';
+    this.heroeIndex = 1;
+    this.pos = new Vector(197,60);
+}
+
+Selector.prototype.render = function(){
+    ctx.drawImage(Resources.get(this.sprite),this.pos.getX(),this.pos.getY());
+};
+
+Selector.prototype.handleInput = function(code){
+    var xPos = this.pos.getX();
+    switch(code){
+        case 'left':
+            if (this.heroeIndex>0){
+                this.pos.setX(xPos - 117);
+                this.heroeIndex--;
+            };
+            break;
+        case 'right':
+            if (this.heroeIndex<heroes.length-1){
+                this.pos.setX(xPos + 117);
+                this.heroeIndex++;
+            };
+            break;
+        case 'space':
+            heroe = heroes[this.heroeIndex];
+            welcomePage = false;
+            runningGame = true;
+            break;
+        default:
+            break;
+    }
+}
+// We initialize a new selector, this is called in the init()
+// function
+function initializeSelector(){
+    selector = new Selector;
+}
+
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 allEnemies = [new Enemy(-101,143,20,1.01), new Enemy(-101,60,20,1), new Enemy(-101,226,20,1)];
 
-player = new Player('images/char-pink-girl.png');
-
-
-
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
+// The event listener for key presses behaves differently depending
+// on the "state" of the game
 document.addEventListener('keydown', function(e) {
     var allowedKeys = {
         37: 'left',
         38: 'up',
         39: 'right',
-        40: 'down'
+        40: 'down',
+        32: 'space',
     };
-
-    player.handleInput(allowedKeys[e.keyCode]);
+    if (welcomePage === true){
+        selector.handleInput(allowedKeys[e.keyCode]);
+    }else if(runningGame === true){
+        player.handleInput(allowedKeys[e.keyCode]);
+    }
 });
 
 /* The following collection of arrays provide several "maps" that will be
