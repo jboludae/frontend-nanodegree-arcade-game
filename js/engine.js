@@ -25,9 +25,7 @@ var Engine = (function(global) {
         ctx = canvas.getContext('2d'),
         lastTime;
 
-
     // We draw the canvas
-
     canvas.style.border = "1px solid black";
     canvas.style.borderRadius = "5px";
     canvas.width = 606;
@@ -70,6 +68,12 @@ var Engine = (function(global) {
             ctx.restore();
         }else if(welcomePage === true){
             displayWelcome();
+        }else if(levelWon === true){
+            displayWelcome();
+        }else if(gameWon === true){
+            displayWelcome();
+        }else if(gameLost === true){
+            displayWelcome();
         }
         /* Use the browser's requestAnimationFrame function to call this
         * function again as soon as the browser is able to draw another frame.
@@ -94,15 +98,11 @@ var Engine = (function(global) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     // We first clean the background of the whole canvas
     selector.render();
-    heroes.forEach(function(heroe){
-        heroe.render();
+    heroes.forEach(function(character){
+        character.render();
     })
-    // We first choose the character
-    // We display the chosen character
 
-    // We require to press space to initialize main()
     // We display welcome text and instructions
-
     ctx.font = "28px Helvetica";
     ctx.fillStyle = "black";
     ctx.textAlign = "center";
@@ -135,16 +135,7 @@ var Engine = (function(global) {
     }
 
     function checkCollisions(){
-        allEnemies.forEach(function(enemy){
-            if (Math.abs(enemy.x - player.x)<80 && Math.abs(enemy.y - player.y)<60){
-                player.x = 404;
-                player.y = 644;
-                lives -= 1;
-                if (lives <= 0){
-                    console.log("game over")
-                }
-            };
-        })
+        heroe.checkCollisions(currentLevel);
     }
 
     function checkGameWon(){
@@ -164,8 +155,8 @@ var Engine = (function(global) {
      * render methods.
      */
     function updateEntities(dt) {
-        allEnemies.forEach(function(enemy) {
-            enemy.update(dt);
+        levels[currentLevel].objects.forEach(function(thing) {
+            thing.update(dt);
         });
     }
 
@@ -190,8 +181,7 @@ var Engine = (function(global) {
         /* We inititialize a base map. We will use mapLevels to feed this map
         and charToImages to code characters to actual images */
         var baseMap = [];
-
-        mapLevels.forEach(function(row){
+        levels[currentLevel].background.forEach(function(row){
             var line = [];
             row.forEach(function(char){
                 var element = charToImages[char];
@@ -201,8 +191,8 @@ var Engine = (function(global) {
         });
 
 
-        var numRows = mapLevels.length,
-            numCols = mapLevels[0].length,
+        var numRows = levels[currentLevel].background.length,
+            numCols = levels[currentLevel].background[0].length,
             row, col;
 
         /* Loop through the number of rows and columns we've defined above
@@ -225,8 +215,8 @@ var Engine = (function(global) {
         // We draw the score in the top right of the screen
         ctx.font = "56px Helvetica";
         ctx.fillStyle = "white";
-        ctx.fillText("Score: "+score, 450, 100);
-        ctx.fillText("Lives: "+lives, 40, 100);
+        ctx.fillText("Score: "+score, 850, 100);
+        ctx.fillText("Lives: "+lives, 240, 100);
         renderEntities();
     }
 
@@ -238,21 +228,11 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
-        allEnemies.forEach(function(enemy) {
-            enemy.render();
+        levels[currentLevel].objects.forEach(function(thing) {
+            thing.render();
         });
-
-        heroe.render();
+        heroe.render()
     }
-
-    /* This function does nothing but it could have been a good place to
-     * handle game reset states - maybe a new game menu or a game over screen
-     * those sorts of things. It's only called once by the init() method.
-     * In our case, this function will initialize the game.
-     */
-
-
-
 
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
@@ -260,6 +240,9 @@ var Engine = (function(global) {
      */
     Resources.load([
         'images/stone-block.png',
+        'images/treeShort.png',
+        'images/treeTall.png',
+        'images/treeUgly.png',
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
@@ -267,7 +250,12 @@ var Engine = (function(global) {
         'images/char-pink-girl.png',
         'images/char-horn-girl.png',
         'images/char-cat-girl.png',
-        'images/selector.png'
+        'images/char-princess-girl.png',
+        'images/selector.png',
+        'images/gemGreen.png',
+        'images/gemBlue.png',
+        'images/gemOrange.png',
+        'images/Heart.png',
     ]);
     Resources.onReady(init);
 

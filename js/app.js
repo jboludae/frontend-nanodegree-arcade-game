@@ -1,6 +1,6 @@
 
 /*---------GLOBAL VARIABLES-----------------------*/
-// We define some additional variables that will define the "state" of the game
+// We define some additional variables that will define the 'state" of the game
 var welcomePage = true; // welcome page. We select our hero and press SPACE  to start game
 var runningGame = false; // game runs at current level
 var levelWon = false; // level is won, we display some things and require "space" to continue
@@ -10,11 +10,111 @@ var gameLost = false; // game is lost, we display losing screen
 // We implement some variables and instanced that have to be available
 // globally
 var lives = 3;
+var currentLevel = 0; // Current level is initialized to 0
 var score = 0;
 var heroe;
+var startPos; // Vector object representing the starting position of heroe
 var heroes;
 var selector;
+var levels; // this is a dictionary with levels
+var gId = 0; // every entity in this game will have a unique id
+var levels = {
+    0: {},
+    1: {},
+    2: {},
+};
+levels[0].background =
+[['w','w','w','w','w','w','w','w','w','w','w','w'],
+['w','s','s','s','s','s','s','w','w','w','w','w'],
+['w','s','s','s','s','s','s','w','w','w','w','w'],
+['w','s','s','s','s','s','s','w','w','w','w','w'],
+['w','g','s','g','s','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','w','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','w','w','w','w','w','w','w','w','w','w','w']];
 
+levels[0].stuff =
+[['i','i','i','i','i','i','i','i','i','i','i','i'],
+['i','i','i','og','x','i','i','i','i','i','i','i'],
+['i','gg','i','i','i','i','i','i','i','i','i','i'],
+['i','i','v','i','i','i','gg','i','i','i','i','i'],
+['i','i','i','bg','i','i','i','i','i','i','i','i'],
+['i','gg','i','i','i','i','i','i','i','i','i','i'],
+['i','tt','bg','i','h','i','bg','i','i','i','tt','i'],
+['i','i','i','i','tt','tt','i','i','i','i','i','i'],
+['i','i','i','bg','i','i','i','i','i','i','i','i'],
+['i','i','i','i','gg','i','i','i','i','i','i','i'],
+['i','i','i','i','i','el','i','i','i','i','i','i'],
+['i','og','pp','i','i','i','h','og','i','v','i','i'],
+['i','i','i','i','i','i','i','i','i','i','i','i'],
+];
+
+levels[1].background =
+[['w','w','w','w','w','w','w','w','w','w','w','w'],
+['w','s','s','s','s','s','s','w','w','w','w','w'],
+['w','s','s','s','s','s','s','w','w','w','w','w'],
+['w','s','s','s','s','s','s','w','w','w','w','w'],
+['w','g','s','g','s','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','w','w','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','w','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','w','w','w','w','w','w','w','w','w','w','w']];
+
+levels[1].stuff =
+[['i','i','i','i','i','i','i','i','i','i','i','i'],
+['i','h','i','og','x','i','i','i','i','i','i','i'],
+['i','gg','i','i','i','i','i','i','i','i','i','i'],
+['i','i','i','i','i','i','gg','i','v','i','i','i'],
+['i','i','i','bg','i','i','i','i','i','i','i','i'],
+['i','gg','i','i','i','i','i','i','i','i','i','i'],
+['i','tt','bg','i','i','i','bg','i','i','i','tt','i'],
+['i','i','i','i','tt','tt','i','i','i','i','i','i'],
+['i','i','i','bg','i','i','i','i','i','i','i','i'],
+['i','i','i','i','gg','i','i','i','i','i','i','i'],
+['i','tt','i','i','i','el','i','i','i','pp','i','i'],
+['i','og','i','i','i','i','i','og','i','v','i','i'],
+['i','i','i','i','i','i','i','i','i','i','i','i'],
+];
+
+levels[2].background =
+[['w','w','w','w','w','w','w','w','w','w','w','w'],
+['w','s','s','s','s','s','s','w','w','w','w','w'],
+['w','s','s','s','s','s','s','w','w','w','w','w'],
+['w','s','s','s','s','s','s','w','w','w','w','w'],
+['w','g','s','g','s','g','g','g','g','w','w','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','w','g','g','w','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','g','g','g','g','g','g','g','g','g','w','w'],
+['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','w','w','w','w','w','w','w','w','w','w','w']];
+
+levels[2].stuff =
+[['i','i','i','i','i','i','i','i','i','i','i','i'],
+['i','i','i','og','x','i','i','i','i','i','i','i'],
+['i','gg','i','i','i','i','i','i','i','i','i','i'],
+['i','i','tt','tt','tt','i','gg','i','v','i','i','i'],
+['i','i','i','tt','i','h','i','i','i','i','i','i'],
+['i','gg','i','i','i','i','i','i','i','i','i','i'],
+['i','tt','bg','i','h','i','bg','i','i','i','tt','i'],
+['i','i','i','i','tt','tt','i','i','i','i','i','i'],
+['i','i','i','bg','i','i','i','i','h','i','i','i'],
+['i','i','i','i','gg','i','i','i','i','i','i','i'],
+['i','i','i','i','i','el','i','i','i','i','i','i'],
+['i','og','pp','h','i','i','i','og','i','v','i','i'],
+['i','i','i','i','i','i','i','i','i','i','i','i'],
+];
 
 /*---------AVAILABLE HEROES-----------------------*/
 
@@ -44,8 +144,7 @@ function generateHeroes(){
     });
     // We set their display positions
     for (var i = 0; i < avaPlayers.length; i++){
-        avaPlayers[i].pos.setX(displayPositions[i].getX());
-        avaPlayers[i].pos.setY(displayPositions[i].getY());
+        avaPlayers[i].pos = displayPositions[i];
     }
     return avaPlayers;
 };
@@ -100,61 +199,184 @@ Vector.prototype.sum = function(other){
     this.y = this.y + other.getY();
 }
 
+Vector.prototype.subs = function(other){
+    this.x = this.x - other.getX();
+    this.y = this.y - other.getY();
+}
 
-// Enemies our player must avoid
-var Enemy = function(x,y,speed,acceleration) {
+/*-------------------ENTITY SUPERCLASS-----------------*/
+/* Entities are objects that can interact with the player.
+* These include enemies, gems, extra lives, water, the princess,
+* and obstacles.
+* They all have:
+* position: a Vector object
+* type: a string indicating the kind of interaction you can expect
+* with the entity
+* a size: a vector. Indicates the size of the entity
+* They also have two methods:
+* .update: updates the entity. In the superclass it will be empty.
+* .render: renders the entity.
+*/
+var Entity = function(pos, sprite, type){
+    this.pos = pos;
+    this.sprite = sprite;
+    this.type = type;
+    this.size = new Vector(81, 63);
+    this.id = gId;
+    gId+=1;
+};
+Entity.prototype.update = function(){};
+Entity.prototype.render = function(){
+    if (this.sprite){
+        ctx.drawImage(Resources.get(this.sprite), this.pos.getX(), this.pos.getY());
+    };
+};
+
+/*-------------------BUG SUBCLASS-----------------*/
+
+/* In addition to all ENTITY properties, a BUG has:
+* a speed: an integer
+* a direction: a string indicating direction of movement: "horizontal" or "vertical"
+*/
+
+var Bug = function(pos,speed, direction) {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
-
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
-    this.sprite = 'images/enemy-bug.png';
-    this.x = x;
-    this.y = y;
+    Entity.call(this,pos, 'images/enemy-bug.png', 'enemy');
     this.speed = speed;
-    this.startSpeed = speed;
-    this.acceleration = acceleration;
-    this.startX = x;
-    this.startY = y;
+    this.direction = direction;
 };
+
+Bug.prototype = Object.create(Entity.prototype);
+Bug.prototype.construction = Bug;
 
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function(dt) {
+Bug.prototype.update = function(dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
-    var width = 2*document.querySelector("canvas").width;
-    if (this.x > width){
-        this.x = this.startX;
-        this.speed = this.startSpeed;
+    var distance = this.speed * dt;
+    var distanceVector;
+    var self = this;
+    if (this.direction === "vertical"){
+        distanceVector = new Vector(0, distance);
+    }else if(this.direction === "horizontal"){
+        distanceVector = new Vector(distance, 0);
     }
-    this.x += this.speed*dt;
-    this.speed *= this.acceleration;
-
+    this.pos.sum(distanceVector);
+    levels[currentLevel].objects.forEach(function(thing){
+        if (thing.id !== self.id)
+            if (thing.type === "obstacle" || thing.type === "enemy" || thing.type === "princess"){
+                if (touch(self,thing)){
+                    self.pos.subs(distanceVector);
+                    self.speed = -self.speed;
+                }
+            };
+    });
 };
 
-// Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+/*---------WATER CLASS-----------------------*/
+var Water = function(pos){
+    Entity.call(this,pos, null, 'enemy');
 };
+Water.prototype = Object.create(Entity.prototype);
+Water.prototype.constructor = Water;
+
+/*---------COLLECTIBLE CLASS-----------------------*/
+var Collectible = function(pos, sprite, type, lifeEffect, scoreIncrease,collected){
+    Entity.call(this, pos, sprite, type);
+    this.lifeEffect = lifeEffect;
+    this.scoreIncrease = scoreIncrease;
+    this.collected = false; // by default
+    this.gemPosition = 0; // by default. This will be changed when player collects gem
+}
+Collectible.prototype = Object.create(Entity.prototype);
+Collectible.prototype.constructor = Collectible;
+Collectible.prototype.render = function(){
+    if (this.collected === false){
+        ctx.save();
+        ctx.translate(this.pos.getX()+22, this.pos.getY()+54);
+        ctx.scale(0.55,0.55);
+        ctx.drawImage(Resources.get(this.sprite), 0, 0);
+        ctx.restore();
+    }else{
+        ctx.save();
+        ctx.translate(this.pos.getX()+72, this.pos.getY()+84+this.gemPosition);
+        ctx.scale(0.35,0.35);
+        ctx.drawImage(Resources.get(this.sprite), 0, 0);
+        ctx.restore();
+    };
+};
+
+var GreenGem = function(pos){
+    Collectible.call(this, pos,'images/gemGreen.png','gem',0,100);
+};
+GreenGem.prototype = Object.create(Collectible.prototype);
+GreenGem.prototype.constructor = GreenGem;
+
+var BlueGem = function(pos){
+    Collectible.call(this, pos,'images/gemBlue.png','gem',0,300);
+};
+BlueGem.prototype = Object.create(Collectible.prototype);
+BlueGem.prototype.constructor = BlueGem;
+
+var OrangeGem = function(pos){
+    Collectible.call(this, pos,'images/gemOrange.png','gem',0,100);
+};
+OrangeGem.prototype = Object.create(Collectible.prototype);
+OrangeGem.prototype.constructor = OrangeGem;
+
+var ExtraLife = function(pos){
+    Collectible.call(this, pos,'images/Heart.png','life',0,1);
+};
+ExtraLife.prototype = Object.create(Collectible.prototype);
+ExtraLife.prototype.constructor = ExtraLife;
+
+/*---------PRINCESS CLASS-----------------------*/
+
+var Princess = function(pos){
+    Entity.call(this,pos,'images/char-princess-girl.png', 'princess');
+};
+Princess.prototype = Object.create(Entity.prototype);
+Princess.prototype.constructor = Princess;
+
+/*---------OBSTACLE CLASSES-----------------------*/
+
+var Obstacle = function(pos,sprite){
+    Entity.call(this,pos,sprite,'obstacle');
+}
+Obstacle.prototype = Object.create(Entity.prototype);
+Obstacle.prototype.constructor = Obstacle;
+
+var TreeTall = function(pos){
+    Obstacle.call(this,pos,'images/treeTall.png');
+}
+TreeTall.prototype = Object.create(Obstacle.prototype);
+TreeTall.prototype.constructor = TreeTall;
 
 /*---------PLAYER CLASS-----------------------*/
 // Now write your own player class
 // This class requires an update(), render() and
 // a handleInput() method.
 
-var Player = function(image){
+var Player = function(image,pos){
     this.sprite = image;
-    var startPos = new Vector(402, 652);
-    this.pos = startPos;
+    this.pos = pos;
+    this.size = new Vector(81, 63);
+    this.type = "player";
+    this.gemStack = 0; // This will describe the height of the gem stack
 };
 
 Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.pos.getX(), this.pos.getY());
 };
-
+var lastHeroePos = new Vector;
 Player.prototype.handleInput = function(code){
+    lastHeroePos.setX(this.pos.getX());
+    lastHeroePos.setY(this.pos.getY());
     if (code === 'left' && this.pos.getX() > 0){
         this.pos.setX(this.pos.getX()-101);
     }else if (code === 'up' && this.pos.getY() > 0){
@@ -163,8 +385,105 @@ Player.prototype.handleInput = function(code){
         this.pos.setX(this.pos.getX()+101);
     }else if (code === "down" && this.pos.getY() < 902){
         this.pos.setY(this.pos.getY()+83);
+    };
+    if (this.checkCollisions(currentLevel)){
+        this.pos.setX(lastHeroePos.getX());
+        this.pos.setY(lastHeroePos.getY());
     }
+
 };
+
+Player.prototype.checkCollisions = function(currentLevel){
+    // we create a copy of the level objects list
+    var copy=[];
+    var result = false;
+    // We need to pass the "this" variable to the functions
+    // in forEach. To do this we create the self variable.
+    var self = this;
+    levels[currentLevel].objects.forEach(function(thing){
+        if (touch(self, thing)){
+            switch (thing.type){
+                // If player touches enemy, we remove a live
+                // and return the player to its starting position.
+                case 'enemy':
+                    lives--;
+                    if (lives < 1){
+                        gameLost = true;
+                        runningGame = false;
+                    }
+                    self.pos.setX(startPos.getX());
+                    self.pos.setY(startPos.getY());
+                    break;
+                case 'gem':
+                    thing.pos = self.pos;
+                    if (thing.collected === false){
+                        thing.gemPosition = self.gemStack;
+                        self.gemStack -= 10;
+                        score += thing.scoreIncrease;
+                        copy.push(thing);
+                    }
+                    thing.collected = true;
+                    break;
+                case 'life':
+                    lives = lives + 1;
+                    thing.pos.setX(100000);
+                    break;
+                case 'obstacle':
+                    result = true;
+                    break;
+                case 'princess':
+                    currentLevel++;
+                    heroe.gemStack = 0;
+                    if (currentLevel<3){
+                        levelWon = true;
+                        runningGame = false;
+                    }else{
+                        gameWon = true;
+                        runningGame = false;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    });
+    //This is a trick. Collected elements will be put at the end of the object list
+    // That way they are drawn in the proper order.
+    if (runningGame){
+        levels[currentLevel].objects = levels[currentLevel].objects.concat(copy);
+    };
+    return result;
+};
+
+/* This helper function returns true if two objects are touching
+* each other and false otherwise*/
+function touch(objectA, objectB){
+    var aX = objectA.pos.getX();
+    var aY = objectA.pos.getY();
+    var aXPlus = aX + objectA.size.getX();
+    var aYPlus = aY + objectA.size.getY();
+
+    var bX = objectB.pos.getX();
+    var bY = objectB.pos.getY();
+    var bXPlus = bX + objectB.size.getX();
+    var bYPlus = bY + objectB.size.getY();
+
+    if (aX >= bX && aX <= bXPlus){
+        if (aY >= bY && aY <= bYPlus){
+            return true;
+        } else if (aYPlus >= bY && aYPlus <= bYPlus){
+            return true;
+        }
+    }else if (aXPlus >= bX && aXPlus <= bXPlus){
+        if (aY >= bY && aY <= bYPlus){
+            return true;
+        } else if (aYPlus >= bY && aYPlus <= bYPlus){
+            return true;
+        }
+    }else{
+        return false;
+    }
+}
 
 /*---------SELECTOR CLASS-----------------------*/
 
@@ -175,7 +494,7 @@ var Selector = function(){
 }
 
 Selector.prototype.render = function(){
-    ctx.drawImage(Resources.get(this.sprite),this.pos.getX(),this.pos.getY());
+    ctx.drawImage(Resources.get(this.sprite),this.pos.getX(), this.pos.getY());
 };
 
 Selector.prototype.handleInput = function(code){
@@ -195,6 +514,13 @@ Selector.prototype.handleInput = function(code){
             break;
         case 'space':
             heroe = heroes[this.heroeIndex];
+            levels[currentLevel].objects = [];
+            loopLevelArr(levels[currentLevel].background,levels[0].objects);
+            loopLevelArr(levels[currentLevel].stuff,levels[0].objects);
+            // We set the starting position of the heroe
+            heroe.pos.setX(startPos.getX());
+            heroe.pos.setY(startPos.getY());
+            // Having selected the heroe, we change the state of the game
             welcomePage = false;
             runningGame = true;
             break;
@@ -208,11 +534,6 @@ function initializeSelector(){
     selector = new Selector;
 }
 
-// Now instantiate your objects.
-// Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
-allEnemies = [new Enemy(-101,143,20,1.01), new Enemy(-101,60,20,1), new Enemy(-101,226,20,1)];
-
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
 // The event listener for key presses behaves differently depending
@@ -225,36 +546,102 @@ document.addEventListener('keydown', function(e) {
         40: 'down',
         32: 'space',
     };
+    var code = allowedKeys[e.keyCode];
     if (welcomePage === true){
-        selector.handleInput(allowedKeys[e.keyCode]);
+        selector.handleInput(code);
     }else if(runningGame === true){
-        player.handleInput(allowedKeys[e.keyCode]);
+        heroe.handleInput(code);
+    }else if(levelWon === true){
+        if (code === 'space'){
+            currentLevel++;
+            levels[currentLevel].objects = [];
+            loopLevelArr(levels[currentLevel].background,levels[currentLevel].objects);
+            loopLevelArr(levels[currentLevel].stuff,levels[currentLevel].objects);
+            heroe.pos.setX(startPos.getX());
+            heroe.pos.setY(startPos.getY());
+            levelWon = false;
+            runningGame = true;
+        }
+    }else if(gameWon === true || gameLost === true){
+        if (code === 'space'){
+            location.reload();
+        }
     }
 });
 
 /* The following collection of arrays provide several "maps" that will be
 loaded by the engine as we progress through the levels */
 
-var mapLevels =
-[["w","w","w","w","w","w","w","w","w","w","w","w","w","w"],
-["s","s","s","s","s","s","s","w","w","w","w","w","w","w"],
-["s","s","s","s","s","s","s","w","w","w","w","w","w","w"],
-["s","s","s","s","s","s","s","w","w","w","w","w","w","w"],
-["g","g","s","g","s","g","g","w","w","w","w","w","w","w"],
-["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
-["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
-["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
-["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
-["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
-["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
-["g","g","g","g","g","g","g","w","w","w","w","w","w","w"],
-["g","g","g","g","g","g","g","w","w","w","w","w","w","w"]];
 
 
 
+// We now loop through both lists and automatically generate
+// the list of objects that will be displayed in the map
 
 
+// i: nothing, free space
+// gg: green gem
+// bg: blue gem
+// og: orange gem
+// h: horizontal enemy
+// v: vertical enemy
+// r: rock
+// tt: tree tall
+// pp: princess
+// x: player
+// el: extra life
 
+// We define a helper function that will allow us to automatically
+// create a list of objects. Given an "arr" with characters and
+// a dest array. It will loop through arr and push the adequate
+// objects to the dest array
 
-
-
+function loopLevelArr(arr,dest){
+    for (row = 0; row < arr.length; row++){
+        for (col = 0; col < arr.length; col++){
+            var location = new Vector(col * 101, -20+row * 83);
+            switch (arr[row][col]){
+                case 'w':
+                    dest.push(new Water(location));
+                    break;
+                case 'i':
+                    break;
+                case 'gg':
+                    dest.push(new GreenGem(location));
+                    break;
+                case 'bg':
+                    dest.push(new BlueGem(location));
+                    break;
+                case 'og':
+                    dest.push(new OrangeGem(location));
+                    break;
+                case 'h':
+                    dest.push(new Bug(location,-255,"horizontal"));
+                    break;
+                case 'v':
+                    dest.push(new Bug(location,-255,"vertical"));
+                    break;
+                case 'r':
+                    break;
+                case 'tt':
+                    dest.push(new TreeTall(location));
+                    break;
+                case 'pp':
+                    dest.push(new Princess(location));
+                    break;
+                // As player is already initialized, all we do here is to set
+                // the starting position
+                case 'x':
+                    startPos = new Vector;
+                    startPos.setX(location.getX());
+                    startPos.setY(location.getY());
+                    break;
+                case 'el':
+                    dest.push(new ExtraLife(location));
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}
