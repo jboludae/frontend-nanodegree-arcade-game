@@ -19,15 +19,39 @@ var startPos; // Vector object representing the starting position of heroe.
 var heroes; // Array of objects with the 4 different heroes available.
 var selector; // Object selector. Will be used to choose heroe in welcome page
 var gId = 0; // entities unique id#. gId will increase each time an entity is instantiated
+var BUG_SPEED = 150; // This is the reference speed for the bugs
 
-/*---------GLOBAL CONSTANTS-----------------------*/
-// Global
-var LEVELS = {
+// Three levels are kept in a dictionary of objects: 0, 1, 2
+// Each level object contains an array:
+// levels[number].background contains the background elements: grass, water, stone
+// levels[number].stuff contains the interactive stuff: gems, trees, bugs, etc.
+// Each character of these arrays will be assigned to an entity 'class'.
+// This allows us to create new levels in an easy way.
+
+//Background character codes:
+// w: water
+// s: stone
+// g: grass
+
+//Stuff character codes:
+// i: nothing, free space
+// gg: green gem
+// bg: blue gem
+// og: orange gem
+// hh: horizontal enemy
+// vv: vertical enemy
+// rr: rock
+// tt: tree tall
+// pp: princess
+// xx: player
+// el: extra life
+
+var levels = {
     0: {},
     1: {},
     2: {},
 };
-LEVELS[0].background =
+levels[0].background =
 [['w','w','w','w','w','w','w','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
@@ -42,23 +66,23 @@ LEVELS[0].background =
 ['w','g','g','g','g','g','g','g','g','g','g','w'],
 ['w','w','w','w','w','w','w','w','w','w','w','w']];
 
-LEVELS[0].stuff =
+levels[0].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
-['i','i','i','og','x','i','i','i','i','i','i','i'],
+['i','i','i','og','xx','i','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
-['i','i','v','i','i','i','gg','i','i','i','i','i'],
+['i','i','vv','i','i','i','gg','i','i','i','i','i'],
 ['i','i','i','bg','i','i','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
-['i','tt','bg','i','h','i','bg','i','i','i','tt','i'],
+['i','tt','bg','i','hh','i','bg','i','i','i','tt','i'],
 ['i','i','i','i','tt','tt','i','i','i','i','i','i'],
 ['i','i','i','bg','i','i','i','i','i','i','i','i'],
 ['i','i','i','i','gg','i','i','i','i','i','i','i'],
 ['i','i','i','i','i','el','i','i','i','i','i','i'],
-['i','og','pp','i','i','i','h','og','i','v','i','i'],
+['i','og','pp','i','i','i','hh','og','i','vv','i','i'],
 ['i','i','i','i','i','i','i','i','i','i','i','i'],
 ];
 
-LEVELS[1].background =
+levels[1].background =
 [['w','w','w','w','w','w','w','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
@@ -73,9 +97,9 @@ LEVELS[1].background =
 ['w','g','g','g','g','g','g','g','g','g','g','w'],
 ['w','w','w','w','w','w','w','w','w','w','w','w']];
 
-LEVELS[1].stuff =
+levels[1].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
-['i','h','i','og','x','i','i','i','i','i','i','i'],
+['i','hh','i','og','xx','i','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
 ['i','i','i','i','i','i','gg','i','i','i','i','i'],
 ['i','i','i','bg','i','i','i','i','i','i','i','i'],
@@ -85,11 +109,11 @@ LEVELS[1].stuff =
 ['i','i','i','bg','i','i','i','i','i','i','i','i'],
 ['i','i','i','i','gg','i','i','i','i','i','i','i'],
 ['i','tt','i','i','i','el','i','i','i','pp','i','i'],
-['i','og','i','i','i','i','i','og','i','v','i','i'],
+['i','og','i','i','i','i','i','og','i','vv','i','i'],
 ['i','i','i','i','i','i','i','i','i','i','i','i'],
 ];
 
-LEVELS[2].background =
+levels[2].background =
 [['w','w','w','w','w','w','w','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
@@ -104,43 +128,100 @@ LEVELS[2].background =
 ['w','g','g','g','g','g','g','g','g','g','g','w'],
 ['w','w','w','w','w','w','w','w','w','w','w','w']];
 
-LEVELS[2].stuff =
+levels[2].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
-['i','i','i','og','x','i','i','i','i','i','i','i'],
+['i','i','i','og','xx','i','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
 ['i','i','tt','tt','tt','i','gg','i','i','i','i','i'],
-['i','i','i','tt','i','h','i','i','i','i','i','i'],
+['i','i','i','tt','i','hh','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
-['i','tt','bg','i','h','i','bg','i','i','i','tt','i'],
+['i','tt','bg','i','hh','i','bg','i','i','i','tt','i'],
 ['i','i','i','i','tt','tt','i','i','i','i','i','i'],
-['i','i','i','bg','i','i','i','i','h','i','i','i'],
+['i','i','i','bg','i','i','i','i','hh','i','i','i'],
 ['i','i','i','i','gg','i','i','i','i','i','i','i'],
 ['i','i','i','i','i','el','i','i','i','i','i','i'],
-['i','og','pp','h','i','i','i','og','i','v','i','i'],
+['i','og','pp','hh','i','i','i','og','i','vv','i','i'],
 ['i','i','i','i','i','i','i','i','i','i','i','i'],
 ];
 
-/*---------AVAILABLE HEROES-----------------------*/
+/*---------HELPER FUNCTIONS-----------------------*/
 
-/* We first take care of displaying the heroes in the
-* "Welcome page". The idea is to display all heroes available.
-* The player can choose one of them and then press SPACE.
-* this function will be used by our "RESET" function */
+// loopLevelArr will help us to automatically create
+// a list of entities for each of the levels.
+// Given an "arr" with characters and a dest array. It will loop
+// through arr and push the adequate objects to the dest array.
+// It will be called before starting each of the levels.
+
+function loopLevelArr(arr,dest){
+    arr.forEach(function(row, rowIndex){
+        row.forEach(function(element, colIndex){
+            var location = new Vector(colIndex * 101, -20+rowIndex * 83);
+            // var location translates from position in a matrix to
+            // positions in canvas. I have adjusted the numbers by trial and error.
+            switch (element){
+                case 'w':
+                    dest.push(new Water(location));
+                    break;
+                case 'i':
+                    break;
+                case 'gg':
+                    dest.push(new GreenGem(location));
+                    break;
+                case 'bg':
+                    dest.push(new BlueGem(location));
+                    break;
+                case 'og':
+                    dest.push(new OrangeGem(location));
+                    break;
+                case 'hh':
+                    dest.push(new Bug(location,BUG_SPEED,"horizontal"));
+                    break;
+                case 'vv':
+                    dest.push(new Bug(location,BUG_SPEED,"vertical"));
+                    break;
+                case 'rr':
+                    break;
+                case 'tt':
+                    dest.push(new TreeTall(location));
+                    break;
+                case 'pp':
+                    dest.push(new Princess(location));
+                    break;
+                // As player is already initialized, all we do here is to set
+                // the starting position
+                case 'xx':
+                    startPos = new Vector;
+                    startPos.setX(location.getX());
+                    startPos.setY(location.getY());
+                    break;
+                case 'el':
+                    dest.push(new ExtraLife(location));
+                    break;
+                default:
+                    break;
+            };
+        });
+    });
+};
+
+/* Generate heroes automatically generates an array of heroes
+* that will be displayed in the welcome page. The result of
+* this functio will be assigne to global variable heroes. */
 
 function generateHeroes(){
-    // We initialize an array with our hero images
+    // We build an array with our hero images
     var avaImages = ['images/char-boy.png',
     'images/char-pink-girl.png',
     'images/char-horn-girl.png',
     'images/char-cat-girl.png']
 
-    // We initialize an array with the display positions
+    // We build an array with the display positions in the welcome screen
     var displayPositions = [new Vector(80, 60),
     new Vector(197, 60),
     new Vector(314, 60),
     new Vector(431, 60)]
 
-    // We populate an array with the available players
+    // We populate an array with heroes
     var avaPlayers = [];
     avaImages.forEach(function(image){
         player = new Player(image);
@@ -153,25 +234,18 @@ function generateHeroes(){
     return avaPlayers;
 };
 
-/* We now create a "hero selector" that will allow us
-*select our hero in the welcome page*/
-
-
-
-
 /*-------------------VECTOR CLASS-----------------*/
 /* We first initialize a helper class that will
-* help us keep track of positions
-* keep in mind that to go from square to square
-* X has to vary in 101 units and Y has to vary
-* in 83 units */
+* help us keep track of positions the position of
+* every entity in the game.
+*/
 
 var Vector = function(x,y){
     this.x = x;
     this.y = y;
 }
 
-/* This two function help us retrieve the x
+/* This two functions help us retrieve the x
 and y values of a vector*/
 
 Vector.prototype.getX = function(){
@@ -181,7 +255,7 @@ Vector.prototype.getY = function(){
     return this.y;
 }
 
-/* This two function help us set the x
+/* This two functions help us set the x
 and y values of a vector*/
 
 Vector.prototype.setX = function(x){
@@ -212,23 +286,27 @@ Vector.prototype.subs = function(other){
 /* Entities are objects that can interact with the player.
 * These include enemies, gems, extra lives, water, the princess,
 * and obstacles.
-* They all have:
+* They all have at least the following properties:
 * position: a Vector object
+* sprite: string indicating the image to load
 * type: a string indicating the kind of interaction you can expect
-* with the entity
-* a size: a vector. Indicates the size of the entity
-* They also have two methods:
-* .update: updates the entity. In the superclass it will be empty.
-* .render: renders the entity.
+* size: a vector object. Indicates the size of the entity.
+* id: this will allow us identify objects.
 */
+
 var Entity = function(pos, sprite, type){
     this.pos = pos;
     this.sprite = sprite;
     this.type = type;
     this.size = new Vector(71, 53);
     this.id = gId;
-    gId+=1;
+    gId+=1; // We increase gId every time we instantiate an entity
 };
+
+/* Entities also have at least two methods:
+* .update: updates the entity. In the superclass it will be empty: not
+* all entities move. For example water and trees.
+* .render: renders the entity on the canvas*/
 Entity.prototype.update = function(){};
 Entity.prototype.render = function(){
     if (this.sprite){
@@ -237,22 +315,16 @@ Entity.prototype.render = function(){
 };
 
 /*-------------------BUG SUBCLASS-----------------*/
-
-/* In addition to all ENTITY properties, a BUG has:
+/* You must avoid bugs as they have the 'enemy' type.
+* In addition to all ENTITY properties, a bug has:
 * a speed: an integer
-* a direction: a string indicating direction of movement: "horizontal" or "vertical"
-*/
-
+* a direction: string "horizontal" or "vertical"*/
 var Bug = function(pos,speed, direction) {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
-    Entity.call(this,pos, 'images/enemy-bug.png', 'enemy');
+    Entity.call(this,pos, 'images/enemy-bug.png', 'enemy'); // Bug is an Entity subclass
     this.speed = speed;
     this.direction = direction;
+    this.displayDirection = true; // enemies will be displayed facing forward at start
 };
-
 Bug.prototype = Object.create(Entity.prototype);
 Bug.prototype.construction = Bug;
 
@@ -264,22 +336,63 @@ Bug.prototype.update = function(dt) {
     // all computers.
     var distance = this.speed * dt;
     var distanceVector;
-    var self = this;
+    // We convert distance to vector so
     if (this.direction === "vertical"){
-        distanceVector = new Vector(0, distance);
+        distanceVector = new Vector(0, distance); // "vertical" enemies will move vertically
     }else if(this.direction === "horizontal"){
-        distanceVector = new Vector(distance, 0);
+        distanceVector = new Vector(distance, 0); // "horizontal" enemies will move horizontally
     }
     this.pos.sum(distanceVector);
-    LEVELS[currentLevel].objects.forEach(function(thing){
+    // Every time we updat a bug position it will check for obstacles
+    this.checkCollision(distanceVector);
+};
+// checkCollision allows a bug to check if it has collided into an enemy, obstacle or
+// princess
+Bug.prototype.checkCollision = function(distanceVector){
+    self = this;
+    levels[currentLevel].objects.forEach(function(thing){
         if (thing.id !== self.id)
             if (thing.type === "obstacle" || thing.type === "enemy" || thing.type === "princess"){
                 if (touch(self,thing)){
                     self.pos.subs(distanceVector);
-                    self.speed = -self.speed;
+                    self.speed = - self.speed;
+                    console.log(self.id + " direction " + self.displayDirection);
+                    self.displayDirection = self.displayDirection ? false : true; // this will toggle the display direction
+                    console.log(self.id + " direction changed to " + self.displayDirection);
                 }
             };
     });
+};
+// We override the render function so bugs are displayed correctly.
+
+Bug.prototype.render = function(){
+    if (this.direction === "horizontal"){
+        if (this.displayDirection){
+            ctx.drawImage(Resources.get(this.sprite), this.pos.getX(), this.pos.getY());
+        }else{
+            // We have to write a bunch of transformations so the sprite is displayed
+            // in the oposite direction when it hits an obstacle
+            ctx.save();
+            ctx.translate(this.pos.getX()+101,this.pos.getY());
+            ctx.scale(-1,1);
+            ctx.drawImage(Resources.get(this.sprite),0,0);
+            ctx.restore();
+        };
+    }else if(this.direction === "vertical"){
+        if (this.displayDirection){
+            ctx.save();
+            ctx.translate(this.pos.getX()+161,this.pos.getY()+62.5);
+            ctx.rotate(Math.PI/2);
+            ctx.drawImage(Resources.get(this.sprite), 0,0);
+            ctx.restore();
+        }else{
+            ctx.save();
+            ctx.translate(this.pos.getX()-61,this.pos.getY()+162.5);
+            ctx.rotate(Math.PI+Math.PI/2);
+            ctx.drawImage(Resources.get(this.sprite), 0,0);
+            ctx.restore();
+        };
+    };
 };
 
 /*---------WATER CLASS-----------------------*/
@@ -404,7 +517,7 @@ Player.prototype.checkCollisions = function(currentLevel){
     // We need to pass the "this" variable to the functions
     // in forEach. To do this we create the self variable.
     var self = this;
-    LEVELS[currentLevel].objects.forEach(function(thing){
+    levels[currentLevel].objects.forEach(function(thing){
         if (touch(self, thing)){
             switch (thing.type){
                 // If player touches enemy, we remove a live
@@ -454,7 +567,7 @@ Player.prototype.checkCollisions = function(currentLevel){
     //This is a trick. Collected elements will be put at the end of the object list
     // That way they are drawn in the proper order.
     if (runningGame){
-        LEVELS[currentLevel].objects = LEVELS[currentLevel].objects.concat(copy);
+        levels[currentLevel].objects = levels[currentLevel].objects.concat(copy);
     };
     return result;
 };
@@ -518,9 +631,9 @@ Selector.prototype.handleInput = function(code){
             break;
         case 'space':
             heroe = heroes[this.heroeIndex];
-            LEVELS[currentLevel].objects = [];
-            loopLevelArr(LEVELS[currentLevel].background,LEVELS[0].objects);
-            loopLevelArr(LEVELS[currentLevel].stuff,LEVELS[0].objects);
+            levels[currentLevel].objects = [];
+            loopLevelArr(levels[currentLevel].background,levels[0].objects);
+            loopLevelArr(levels[currentLevel].stuff,levels[0].objects);
             // We set the starting position of the heroe
             heroe.pos.setX(startPos.getX());
             heroe.pos.setY(startPos.getY());
@@ -558,9 +671,9 @@ document.addEventListener('keydown', function(e) {
     }else if(levelWon === true){
         if (code === 'space'){
             currentLevel++;
-            LEVELS[currentLevel].objects = [];
-            loopLevelArr(LEVELS[currentLevel].background,LEVELS[currentLevel].objects);
-            loopLevelArr(LEVELS[currentLevel].stuff,LEVELS[currentLevel].objects);
+            levels[currentLevel].objects = [];
+            loopLevelArr(levels[currentLevel].background,levels[currentLevel].objects);
+            loopLevelArr(levels[currentLevel].stuff,levels[currentLevel].objects);
             heroe.pos.setX(startPos.getX());
             heroe.pos.setY(startPos.getY());
             levelWon = false;
@@ -573,79 +686,3 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-/* The following collection of arrays provide several "maps" that will be
-loaded by the engine as we progress through the LEVELS */
-
-
-
-
-// We now loop through both lists and automatically generate
-// the list of objects that will be displayed in the map
-
-
-// i: nothing, free space
-// gg: green gem
-// bg: blue gem
-// og: orange gem
-// h: horizontal enemy
-// v: vertical enemy
-// r: rock
-// tt: tree tall
-// pp: princess
-// x: player
-// el: extra life
-
-// We define a helper function that will allow us to automatically
-// create a list of objects. Given an "arr" with characters and
-// a dest array. It will loop through arr and push the adequate
-// objects to the dest array
-
-function loopLevelArr(arr,dest){
-    for (row = 0; row < arr.length; row++){
-        for (col = 0; col < arr.length; col++){
-            var location = new Vector(col * 101, -20+row * 83);
-            switch (arr[row][col]){
-                case 'w':
-                    dest.push(new Water(location));
-                    break;
-                case 'i':
-                    break;
-                case 'gg':
-                    dest.push(new GreenGem(location));
-                    break;
-                case 'bg':
-                    dest.push(new BlueGem(location));
-                    break;
-                case 'og':
-                    dest.push(new OrangeGem(location));
-                    break;
-                case 'h':
-                    dest.push(new Bug(location,120,"horizontal"));
-                    break;
-                case 'v':
-                    dest.push(new Bug(location,120,"vertical"));
-                    break;
-                case 'r':
-                    break;
-                case 'tt':
-                    dest.push(new TreeTall(location));
-                    break;
-                case 'pp':
-                    dest.push(new Princess(location));
-                    break;
-                // As player is already initialized, all we do here is to set
-                // the starting position
-                case 'x':
-                    startPos = new Vector;
-                    startPos.setX(location.getX());
-                    startPos.setY(location.getY());
-                    break;
-                case 'el':
-                    dest.push(new ExtraLife(location));
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-}
