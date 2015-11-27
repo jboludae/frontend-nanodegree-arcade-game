@@ -13,7 +13,6 @@
  * the canvas' context (ctx) object globally available to make writing app.js
  * a little simpler to work with.
  */
-
 (function(global) {
     /* Predefine the variables we'll be using within this scope,
      * create the canvas element, grab the 2D context for that canvas
@@ -42,18 +41,18 @@
          * would be the same for everyone (regardless of how fast their
          * computer is) - hurray time!
          */
-         /*
+        /*
          * We will modify the behaviour of the main() function depending on the state
          * of the game.
          */
         var now = Date.now(),
-        dt = (now - lastTime) / 1000.0;
-        if (runningGame === true){
+            dt = (now - lastTime) / 1000.0;
+        if (runningGame === true) {
             /* We now save the current transformation state
-            * and scale everything by 0.5. This will allow
-            * us to have smaller graphics */
+             * and scale everything by 0.5. This will allow
+             * us to have smaller graphics */
             ctx.save();
-            ctx.scale(0.5,0.5);
+            ctx.scale(0.5, 0.5);
             /* Call our update/render functions, pass along the time delta to
              * our update function since it may be used for smooth animation.
              */
@@ -63,21 +62,21 @@
              * for the next time this function is called.
              */
             /* We restore the context so it will not re-scale in an
-            *infinite loop*/
+             *infinite loop*/
             ctx.restore();
-        }else if(welcomePage === true){
+        } else if (welcomePage === true) {
             displayWelcome(); // We display the welcome page
-        }else if(levelWon === true){
+        } else if (levelWon === true) {
             displayLevelWon(); // We display a current score
-        }else if(gameWon === true){
+        } else if (gameWon === true) {
             displayGameWon(); // We display end page. You beat the game
-        }else if(gameLost === true){
+        } else if (gameLost === true) {
             displayGameOver(); // Game is over
         }
         lastTime = now;
         /* Use the browser's requestAnimationFrame function to call this
-        * function again as soon as the browser is able to draw another frame.
-        */
+         * function again as soon as the browser is able to draw another frame.
+         */
         win.requestAnimationFrame(main);
     }
 
@@ -86,101 +85,103 @@
      * game loop and initializing a selector for the welcome page.
      */
     function init() {
-        selector = new Selector; // We initialize a selector
+        selector = new Selector(); // We initialize a selector
         heroes = generateHeroes(); // generates a list of available heroes
         lastTime = Date.now();
         main();
     }
 
     function displayWelcome() {
-    // We first clean the background of the whole canvas
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // We first clean the background of the whole canvas
-    selector.render();
-    heroes.forEach(function(character){
-        character.render();
-    })
+        // We first clean the background of the whole canvas
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // We first clean the background of the whole canvas
+        selector.render();
+        heroes.forEach(function(character) {
+            character.render();
+        });
 
-    // We display welcome text and instructions
-    ctx.font = "28px Helvetica";
-    ctx.fillStyle = "black";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("Use arrow keys to choose your hero", 303, 50);
-    ctx.textAlign = "center";
-    ctx.fillText("YOUR MISSION:", 303, 280);
-    ctx.fillText("Bring gems to the princess.", 303, 320);
-    ctx.fillText("Avoid water.", 303, 360);
-    ctx.fillText("Avoid the bastards.", 303, 400);
-    ctx.fillText("Be fast.", 303, 440);
-    ctx.font = "40px Helvetica";
-    ctx.textAlign = "center";
-    ctx.fillText("Press SPACE to start", 303, 515);
+        // We display welcome text and instructions
+        ctx.font = "28px Helvetica";
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("Use arrow keys to choose your hero", 303, 50);
+        ctx.textAlign = "center";
+        ctx.fillText("YOUR MISSION:", 303, 280);
+        ctx.fillText("Bring gems to the princess.", 303, 320);
+        ctx.fillText("Avoid water.", 303, 360);
+        ctx.fillText("Avoid the bastards.", 303, 400);
+        ctx.fillText("Be fast.", 303, 440);
+        ctx.font = "40px Helvetica";
+        ctx.textAlign = "center";
+        ctx.fillText("Press SPACE to start", 303, 515);
     }
 
     function displayLevelWon() {
-    // We first clean the background of the whole canvas
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // We first clean the background of the whole canvas
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // We display welcome text and instructions
-    ctx.font = "28px Helvetica";
-    ctx.fillStyle = "white";
-    ctx.shadowColor = "black"
-    ctx.shadowBlur = 8;
-    ctx.font = "40px Helvetica";
-    ctx.textAlign = "center";
-    ctx.fillText("Congratulations!!", 303, 300);
-    ctx.fillText("Level "+currentLevel+" score is: "+levelScore, 303, 375);
-    ctx.fillText("Total score is: " + score, 303, 450);
-    ctx.fillText("Press SPACE to start", 303, 525);
-    ctx.shadowColor = null;
-    ctx.shadowBlur = 0;
+        // We display welcome text and instructions
+        ctx.font = "28px Helvetica";
+        ctx.fillStyle = "white";
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 8;
+        ctx.font = "40px Helvetica";
+        ctx.textAlign = "center";
+        ctx.fillText("Congratulations!!", 303, 300);
+        ctx.fillText("Level " + currentLevel + " score is: " + levelScore,
+            303, 375);
+        ctx.fillText("Total score is: " + score, 303, 450);
+        ctx.fillText("Press SPACE to start", 303, 525);
+        ctx.shadowColor = null;
+        ctx.shadowBlur = 0;
     }
-    function displayGameWon() {
-    // We first clean the background of the whole canvas
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // We display welcome text and instructions
-    ctx.font = "28px Helvetica";
-    ctx.fillStyle = "white";
-    ctx.shadowColor = "black"
-    ctx.shadowBlur = 8;
-    ctx.font = "40px Helvetica";
-    ctx.textAlign = "center";
-    ctx.fillText("The princess got it gems!!", 303, 350);
-    ctx.fillText("Your final score is: "+score, 303, 425);
-    ctx.fillText("Press SPACE to start again", 303, 500);
-    ctx.shadowColor = null;
-    ctx.shadowBlur = 0;
+    function displayGameWon() {
+        // We first clean the background of the whole canvas
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // We display welcome text and instructions
+        ctx.font = "28px Helvetica";
+        ctx.fillStyle = "white";
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 8;
+        ctx.font = "40px Helvetica";
+        ctx.textAlign = "center";
+        ctx.fillText("The princess got it gems!!", 303, 350);
+        ctx.fillText("Your final score is: " + score, 303, 425);
+        ctx.fillText("Press SPACE to start again", 303, 500);
+        ctx.shadowColor = null;
+        ctx.shadowBlur = 0;
     }
 
     function displayGameOver() {
-    // We first clean the background of the whole canvas
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // We first clean the background of the whole canvas
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // We display welcome text and instructions
-    ctx.font = "28px Helvetica";
-    ctx.fillStyle = "white";
-    ctx.shadowColor = "black"
-    ctx.shadowBlur = 8;
-    ctx.font = "40px Helvetica";
-    ctx.textAlign = "center";
-    ctx.fillText("GAME OVER!!", 303, 350);
-    ctx.fillText("Press SPACE to start again", 303, 425);
-    ctx.shadowColor = null;
-    ctx.shadowBlur = 0;
+        // We display welcome text and instructions
+        ctx.font = "28px Helvetica";
+        ctx.fillStyle = "white";
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 8;
+        ctx.font = "40px Helvetica";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER!!", 303, 350);
+        ctx.fillText("Press SPACE to start again", 303, 425);
+        ctx.shadowColor = null;
+        ctx.shadowBlur = 0;
     }
 
     /* This function is called by main (our game loop) and itself calls all
      * of the functions which may need to update entity's data.
      */
     function update(dt) {
-        updateEntities(dt);// We update the position of entities
-        heroe.checkCollisions(currentLevel);// We check collisions
+        updateEntities(dt); // We update the position of entities
+        heroe.checkCollisions(currentLevel); // We check collisions
     }
 
     /* This is called by the update function  and loops through all of the
@@ -206,17 +207,17 @@
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         var charToImages = {
-            "w": 'images/water-block.png',
-            "s": 'images/stone-block.png',
-            "r": 'images/Rock.png',
-            "g": "images/grass-block.png"
-        }
-        /* We inititialize a base map. We will use maplevels to feed this map
-        and charToImages to code characters to actual images */
+                "w": 'images/water-block.png',
+                "s": 'images/stone-block.png',
+                "r": 'images/Rock.png',
+                "g": "images/grass-block.png"
+            };
+            /* We inititialize a base map. We will use maplevels to feed this map
+            and charToImages to code characters to actual images */
         var baseMap = [];
-        levels[currentLevel].background.forEach(function(row){
+        levels[currentLevel].background.forEach(function(row) {
             var line = [];
-            row.forEach(function(char){
+            row.forEach(function(char) {
                 var element = charToImages[char];
                 line.push(element);
             });
@@ -250,9 +251,9 @@
         ctx.fillStyle = "white";
         ctx.shadowColor = "black";
         ctx.shadowBlur = 8;
-        ctx.fillText("Level score: "+levelScore, 880, 100);
-        ctx.fillText("Lives: "+lives, 140, 100);
-        ctx.fillText("Level: "+ (currentLevel+1), 140, 1085);
+        ctx.fillText("Level score: " + levelScore, 880, 100);
+        ctx.fillText("Lives: " + lives, 140, 100);
+        ctx.fillText("Level: " + (currentLevel + 1), 140, 1085);
         ctx.shadowBlur = 0;
         renderEntities();
     }
@@ -266,18 +267,20 @@
          * the render function you have defined.
          */
         levels[currentLevel].objects.forEach(function(thing) {
-            if (thing.type !== 'enemy'){thing.render()};
+            if (thing.type !== 'enemy') {
+                thing.render();
+            }
         });
         // This is a trick to draw bugs after all other elements
         // damages performance cause we have to loop two times over
         // same list. If I went back in time, would have put bugs in a
         // different list.
         levels[currentLevel].objects.forEach(function(thing) {
-            if (thing.type === 'enemy'){
+            if (thing.type === 'enemy') {
                 thing.render();
             }
         });
-        heroe.render() // Finally, we render the heroe
+        heroe.render(); // Finally, we render the heroe
     }
 
     /* We load here all images that will be needed
@@ -310,4 +313,3 @@
      */
     global.ctx = ctx;
 })(this);
-
