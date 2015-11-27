@@ -1,23 +1,27 @@
 
 /*---------GLOBAL VARIABLES-----------------------*/
-// We define some additional variables that will define the 'state" of the game
-var welcomePage = true; // welcome page. We select our hero and press SPACE  to start game
+// We define some global variables that will define the 'state' of the game
+// The event listener for key presses and the main() function in engine.js
+// will react differently depending on the stage of the game.
+// Note that none of this variables can be true simultaneously.
+var welcomePage = true; // welcome page is displayed
 var runningGame = false; // game runs at current level
-var levelWon = false; // level is won, we display some things and require "space" to continue
-var gameWon = false; // game is won, we display winning screen
-var gameLost = false; // game is lost, we display losing screen
+var levelWon = false; // level won page is displayed
+var gameWon = false; // victory page is displayed
+var gameLost = false; // game over page is displayed
 
-// We implement some variables and instanced that have to be available
-// globally
-var lives = 3;
-var currentLevel = 0; // Current level is initialized to 0
-var score = 0;
-var heroe;
-var startPos; // Vector object representing the starting position of heroe
-var heroes;
-var selector;
-var levels; // this is a dictionary with levels
-var gId = 0; // every entity in this game will have a unique id
+// We implement some variables to track game parameters:
+var lives = 2; // These are the current lives
+var currentLevel = 0; // Current level
+var score = 0; // Current score
+var heroe; // This is the 'heroe' object. Will be chosen and assigned in welcome page
+var startPos; // Vector object representing the starting position of heroe.
+var heroes; // Array of objects with the 4 different heroes available.
+var selector; // Object selector. Will be used to choose heroe in welcome page
+var gId = 0; // entities unique id#. gId will increase each time an entity is instantiated
+
+/*---------GLOBAL CONSTANTS-----------------------*/
+// Global
 var levels = {
     0: {},
     1: {},
@@ -73,7 +77,7 @@ levels[1].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
 ['i','h','i','og','x','i','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
-['i','i','i','i','i','i','gg','i','v','i','i','i'],
+['i','i','i','i','i','i','gg','i','i','i','i','i'],
 ['i','i','i','bg','i','i','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
 ['i','tt','bg','i','i','i','bg','i','i','i','tt','i'],
@@ -104,7 +108,7 @@ levels[2].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
 ['i','i','i','og','x','i','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
-['i','i','tt','tt','tt','i','gg','i','v','i','i','i'],
+['i','i','tt','tt','tt','i','gg','i','i','i','i','i'],
 ['i','i','i','tt','i','h','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
 ['i','tt','bg','i','h','i','bg','i','i','i','tt','i'],
@@ -221,7 +225,7 @@ var Entity = function(pos, sprite, type){
     this.pos = pos;
     this.sprite = sprite;
     this.type = type;
-    this.size = new Vector(81, 63);
+    this.size = new Vector(71, 53);
     this.id = gId;
     gId+=1;
 };
@@ -616,10 +620,10 @@ function loopLevelArr(arr,dest){
                     dest.push(new OrangeGem(location));
                     break;
                 case 'h':
-                    dest.push(new Bug(location,-255,"horizontal"));
+                    dest.push(new Bug(location,120,"horizontal"));
                     break;
                 case 'v':
-                    dest.push(new Bug(location,-255,"vertical"));
+                    dest.push(new Bug(location,120,"vertical"));
                     break;
                 case 'r':
                     break;
