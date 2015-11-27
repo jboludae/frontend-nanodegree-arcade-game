@@ -86,7 +86,7 @@
      * game loop and initializing a selector for the welcome page.
      */
     function init() {
-        initializeSelector();
+        selector = new Selector; // We initialize a selector
         heroes = generateHeroes(); // generates a list of available heroes
         lastTime = Date.now();
         main();
@@ -229,7 +229,16 @@
          * the render function you have defined.
          */
         levels[currentLevel].objects.forEach(function(thing) {
-            thing.render();
+            if (thing.type !== 'enemy'){thing.render()};
+        });
+        // This is a trick to draw bugs after all other elements
+        // damages performance cause we have to loop two times over
+        // same list. If I went back in time, would have put bugs in a
+        // different list.
+        levels[currentLevel].objects.forEach(function(thing) {
+            if (thing.type === 'enemy'){
+                thing.render();
+            }
         });
         heroe.render()
     }
@@ -241,6 +250,7 @@
     Resources.load([
         'images/stone-block.png',
         'images/treeShort.png',
+        'images/Rock.png',
         'images/treeTall.png',
         'images/treeUgly.png',
         'images/water-block.png',

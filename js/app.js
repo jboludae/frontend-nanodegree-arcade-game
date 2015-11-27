@@ -19,7 +19,9 @@ var startPos; // Vector object representing the starting position of heroe.
 var heroes; // Array of objects with the 4 different heroes available.
 var selector; // Object selector. Will be used to choose heroe in welcome page
 var gId = 0; // entities unique id#. gId will increase each time an entity is instantiated
-var BUG_SPEED = 150; // This is the reference speed for the bugs
+var MIN_BUG_SPEED = 1; // This is starting speed for the bugs
+var BUG_INT_SPEED = 280;
+var MAX_BUG_SPEED = 800; // This is the max speed for the bugs
 
 // Three levels are kept in a dictionary of objects: 0, 1, 2
 // Each level object contains an array:
@@ -42,6 +44,8 @@ var BUG_SPEED = 150; // This is the reference speed for the bugs
 // vv: vertical enemy
 // rr: rock
 // tt: tree tall
+// ts: tree short
+// tu: tree ugly
 // pp: princess
 // xx: player
 // el: extra life
@@ -72,11 +76,11 @@ levels[0].stuff =
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
 ['i','i','vv','i','i','i','gg','i','i','i','i','i'],
 ['i','i','i','bg','i','i','i','i','i','i','i','i'],
-['i','gg','i','i','i','i','i','i','i','i','i','i'],
+['i','gg','i','i','i','i','rr','i','i','i','i','i'],
 ['i','tt','bg','i','hh','i','bg','i','i','i','tt','i'],
 ['i','i','i','i','tt','tt','i','i','i','i','i','i'],
 ['i','i','i','bg','i','i','i','i','i','i','i','i'],
-['i','i','i','i','gg','i','i','i','i','i','i','i'],
+['i','i','i','i','gg','i','ts','ts','tu','i','i','i'],
 ['i','i','i','i','i','el','i','i','i','i','i','i'],
 ['i','og','pp','i','i','i','hh','og','i','vv','i','i'],
 ['i','i','i','i','i','i','i','i','i','i','i','i'],
@@ -174,15 +178,22 @@ function loopLevelArr(arr,dest){
                     dest.push(new OrangeGem(location));
                     break;
                 case 'hh':
-                    dest.push(new Bug(location,BUG_SPEED,"horizontal"));
+                    dest.push(new Bug(location,MIN_BUG_SPEED,"horizontal"));
                     break;
                 case 'vv':
-                    dest.push(new Bug(location,BUG_SPEED,"vertical"));
+                    dest.push(new Bug(location,MIN_BUG_SPEED,"vertical"));
                     break;
                 case 'rr':
+                    dest.push(new StoneBlock(location));
                     break;
                 case 'tt':
                     dest.push(new TreeTall(location));
+                    break;
+                case 'ts':
+                    dest.push(new TreeShort(location));
+                    break;
+                case 'tu':
+                    dest.push(new TreeUgly(location));
                     break;
                 case 'pp':
                     dest.push(new Princess(location));
@@ -335,59 +346,67 @@ Bug.prototype.update = function(dt) {
     // which will ensure the game runs at the same speed for
     // all computers.
     var distance = this.speed * dt;
+    // Bugs get angrier with time. They start slow, grow exponentially up to BUG_INT_SPEED
+    // and then their speed increases linearly up to MAX_BUG_SPEED
+    if (this.speed > 0){
+        this.speed = this.speed < BUG_INT_SPEED ? this.speed += dt*100 : this.speed = this.speed < MAX_BUG_SPEED ? this.speed += dt*5:this.speed;
+    }else{
+        this.speed = this.speed > -BUG_INT_SPEED ? this.speed -= dt*100 : this.speed = this.speed > -MAX_BUG_SPEED ? this.speed -= dt*5: this.speed;
+    }
     var distanceVector;
-    // We convert distance to vector so
+    // We convert distance to a vector object:
     if (this.direction === "vertical"){
         distanceVector = new Vector(0, distance); // "vertical" enemies will move vertically
     }else if(this.direction === "horizontal"){
         distanceVector = new Vector(distance, 0); // "horizontal" enemies will move horizontally
     }
     this.pos.sum(distanceVector);
-    // Every time we updat a bug position it will check for obstacles
+    // Every time we update a bug position it will check for obstacles
     this.checkCollision(distanceVector);
 };
 // checkCollision allows a bug to check if it has collided into an enemy, obstacle or
-// princess
+// princess and adjust its behavious appropieately. It is called by the 'update' method.
 Bug.prototype.checkCollision = function(distanceVector){
-    self = this;
+    self = this; // we pass this to a variable so it can be used within forEach
     levels[currentLevel].objects.forEach(function(thing){
         if (thing.id !== self.id)
-            if (thing.type === "obstacle" || thing.type === "enemy" || thing.type === "princess"){
+            if (thing.type === 'obstacle' || thing.type === 'enemy' || thing.type === 'princess'){
                 if (touch(self,thing)){
-                    self.pos.subs(distanceVector);
-                    self.speed = - self.speed;
-                    console.log(self.id + " direction " + self.displayDirection);
-                    self.displayDirection = self.displayDirection ? false : true; // this will toggle the display direction
-                    console.log(self.id + " direction changed to " + self.displayDirection);
+                    self.pos.subs(distanceVector); // This moves the bug back so it does not get trapped in obstacles
+                    self.speed = - self.speed; // We invert the speed when but toches obstacle
+                    self.displayDirection = self.displayDirection ? false : true;
+                    // this will toggle the display direction each time a bug bumps into an obstacle
                 }
             };
     });
 };
-// We override the render function so bugs are displayed correctly.
 
+// We override the render function for bugs so they are displayed correctly.
 Bug.prototype.render = function(){
     if (this.direction === "horizontal"){
         if (this.displayDirection){
+            // If bug is "horizontal" and displayDirection
             ctx.drawImage(Resources.get(this.sprite), this.pos.getX(), this.pos.getY());
         }else{
             // We have to write a bunch of transformations so the sprite is displayed
-            // in the oposite direction when it hits an obstacle
-            ctx.save();
+            // facing west when it hits an obstacle to its right.
+            ctx.save(); // we save the transformation state so it can be restored
             ctx.translate(this.pos.getX()+101,this.pos.getY());
             ctx.scale(-1,1);
             ctx.drawImage(Resources.get(this.sprite),0,0);
-            ctx.restore();
+            ctx.restore();// we restore transformation state after drawing bug
         };
     }else if(this.direction === "vertical"){
         if (this.displayDirection){
+            // If bug is vertical we have to display it facing downwards
             ctx.save();
             ctx.translate(this.pos.getX()+161,this.pos.getY()+62.5);
-            ctx.rotate(Math.PI/2);
+            ctx.rotate(Math.PI/2); // arguments of Math.PI function are radians
             ctx.drawImage(Resources.get(this.sprite), 0,0);
             ctx.restore();
         }else{
             ctx.save();
-            ctx.translate(this.pos.getX()-61,this.pos.getY()+162.5);
+            ctx.translate(this.pos.getX()-62.5,this.pos.getY()+161);
             ctx.rotate(Math.PI+Math.PI/2);
             ctx.drawImage(Resources.get(this.sprite), 0,0);
             ctx.restore();
@@ -397,29 +416,39 @@ Bug.prototype.render = function(){
 
 /*---------WATER CLASS-----------------------*/
 var Water = function(pos){
-    Entity.call(this,pos, null, 'enemy');
+    Entity.call(this,pos, null, 'enemy'); // type 'enemy' so player will die if it touches it
 };
 Water.prototype = Object.create(Entity.prototype);
 Water.prototype.constructor = Water;
 
 /*---------COLLECTIBLE CLASS-----------------------*/
+/* This is a superclass for collectible items, which include gems and extra lives
+* In addition to the Entity properties, they also have:
+* lifeEffect: integer. Will increase the # of lives of our heroe
+* scoreIncrease: integer. Will increase our score
+* collected: boolean. Will change to true once the heroe collects the item
+* gemPosition: integer. Our heroe will stack gems on its side. This number defines
+* the position in the stack and will be defined when the gem is collected
+*/
 var Collectible = function(pos, sprite, type, lifeEffect, scoreIncrease,collected){
     Entity.call(this, pos, sprite, type);
     this.lifeEffect = lifeEffect;
     this.scoreIncrease = scoreIncrease;
-    this.collected = false; // by default
-    this.gemPosition = 0; // by default. This will be changed when player collects gem
+    this.collected = false; // When element is collected, this.collected will be changed to true
+    this.gemPosition = 0; // 0 by default. This will be defined when collected
 }
 Collectible.prototype = Object.create(Entity.prototype);
 Collectible.prototype.constructor = Collectible;
 Collectible.prototype.render = function(){
     if (this.collected === false){
+        // We make a bunch of transformations so gems are displayed smaller
         ctx.save();
         ctx.translate(this.pos.getX()+22, this.pos.getY()+54);
         ctx.scale(0.55,0.55);
         ctx.drawImage(Resources.get(this.sprite), 0, 0);
         ctx.restore();
     }else{
+        // If gem has been collected it will be displayed stacked besides our heroe
         ctx.save();
         ctx.translate(this.pos.getX()+72, this.pos.getY()+84+this.gemPosition);
         ctx.scale(0.35,0.35);
@@ -428,6 +457,9 @@ Collectible.prototype.render = function(){
     };
 };
 
+// We create classes for green, blue and orange gems. Each one will
+// have a different sprite and a different effect on score. They will
+// have no effect on the # of lives.
 var GreenGem = function(pos){
     Collectible.call(this, pos,'images/gemGreen.png','gem',0,100);
 };
@@ -441,11 +473,12 @@ BlueGem.prototype = Object.create(Collectible.prototype);
 BlueGem.prototype.constructor = BlueGem;
 
 var OrangeGem = function(pos){
-    Collectible.call(this, pos,'images/gemOrange.png','gem',0,100);
+    Collectible.call(this, pos,'images/gemOrange.png','gem',0,500);
 };
 OrangeGem.prototype = Object.create(Collectible.prototype);
 OrangeGem.prototype.constructor = OrangeGem;
 
+// We create the ExtraLife class. Will increase #lives in 1 and have no effect on score.
 var ExtraLife = function(pos){
     Collectible.call(this, pos,'images/Heart.png','life',0,1);
 };
@@ -453,7 +486,7 @@ ExtraLife.prototype = Object.create(Collectible.prototype);
 ExtraLife.prototype.constructor = ExtraLife;
 
 /*---------PRINCESS CLASS-----------------------*/
-
+// We define princess class and give it type "princess"
 var Princess = function(pos){
     Entity.call(this,pos,'images/char-princess-girl.png', 'princess');
 };
@@ -461,18 +494,37 @@ Princess.prototype = Object.create(Entity.prototype);
 Princess.prototype.constructor = Princess;
 
 /*---------OBSTACLE CLASSES-----------------------*/
-
+// Now the obstacle superclass, which will have type 'obstacle'
 var Obstacle = function(pos,sprite){
     Entity.call(this,pos,sprite,'obstacle');
 }
 Obstacle.prototype = Object.create(Entity.prototype);
 Obstacle.prototype.constructor = Obstacle;
 
+// We create 4 different kinds of obstacles with different images
 var TreeTall = function(pos){
     Obstacle.call(this,pos,'images/treeTall.png');
 }
 TreeTall.prototype = Object.create(Obstacle.prototype);
 TreeTall.prototype.constructor = TreeTall;
+
+var StoneBlock = function(pos){
+    Obstacle.call(this,pos,'images/Rock.png');
+}
+StoneBlock.prototype = Object.create(Obstacle.prototype);
+StoneBlock.prototype.constructor = StoneBlock;
+
+var TreeShort = function(pos){
+    Obstacle.call(this,pos,'images/treeShort.png');
+}
+TreeShort.prototype = Object.create(Obstacle.prototype);
+TreeShort.prototype.constructor = TreeShort;
+
+var TreeUgly = function(pos){
+    Obstacle.call(this,pos,'images/treeUgly.png');
+}
+TreeUgly.prototype = Object.create(Obstacle.prototype);
+TreeUgly.prototype.constructor = TreeUgly;
 
 /*---------PLAYER CLASS-----------------------*/
 // Now write your own player class
@@ -490,8 +542,11 @@ var Player = function(image,pos){
 Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.pos.getX(), this.pos.getY());
 };
-var lastHeroePos = new Vector;
+
+// This handleInput function will be called by event listener when game is running
 Player.prototype.handleInput = function(code){
+    // We save the last position of heroe in a vector
+    var lastHeroePos = new Vector;
     lastHeroePos.setX(this.pos.getX());
     lastHeroePos.setY(this.pos.getY());
     if (code === 'left' && this.pos.getX() > 0){
@@ -500,20 +555,21 @@ Player.prototype.handleInput = function(code){
         this.pos.setY(this.pos.getY()-83);
     }else if (code === 'right' && this.pos.getX() < 1108){
         this.pos.setX(this.pos.getX()+101);
-    }else if (code === "down" && this.pos.getY() < 902){
+    }else if (code === 'down' && this.pos.getY() < 902){
         this.pos.setY(this.pos.getY()+83);
     };
-    if (this.checkCollisions(currentLevel)){
-        this.pos.setX(lastHeroePos.getX());
+    // If hero bumps into obstacle the checkCollisions function
+    // returns true.
+    if (this.checkObstacles(currentLevel)){
+        this.pos.setX(lastHeroePos.getX());// We make hero jump back to last position
         this.pos.setY(lastHeroePos.getY());
     }
 
 };
 
 Player.prototype.checkCollisions = function(currentLevel){
-    // we create a copy of the level objects list
-    var copy=[];
-    var result = false;
+    // We create an empty list of collected gems
+    var collecteGems=[];
     // We need to pass the "this" variable to the functions
     // in forEach. To do this we create the self variable.
     var self = this;
@@ -525,6 +581,8 @@ Player.prototype.checkCollisions = function(currentLevel){
                 case 'enemy':
                     lives--;
                     if (lives < 1){
+                    // if all lives are gone, we switch the state of game
+                    // to gameLost
                         gameLost = true;
                         runningGame = false;
                     }
@@ -537,20 +595,18 @@ Player.prototype.checkCollisions = function(currentLevel){
                         thing.gemPosition = self.gemStack;
                         self.gemStack -= 10;
                         score += thing.scoreIncrease;
-                        copy.push(thing);
+                        collecteGems.push(thing);// collecteGems will be stored in an array
                     }
-                    thing.collected = true;
+                    thing.collected = true; // we change the state of the gem
                     break;
                 case 'life':
                     lives = lives + 1;
-                    thing.pos.setX(100000);
-                    break;
-                case 'obstacle':
-                    result = true;
+                    thing.pos.setX(100000); // we set position off-screen so cannot be collected again
                     break;
                 case 'princess':
+                    score += 1000; // score is increased in 1000 when princess is visited
                     currentLevel++;
-                    heroe.gemStack = 0;
+                    heroe.gemStack = 0; // The gem stack is reset to 0
                     if (currentLevel<3){
                         levelWon = true;
                         runningGame = false;
@@ -564,17 +620,40 @@ Player.prototype.checkCollisions = function(currentLevel){
             }
         }
     });
-    //This is a trick. Collected elements will be put at the end of the object list
-    // That way they are drawn in the proper order.
+    //This is a trick. Collected gems will be put at the end of the object list
+    // that way, they will be drawn last and the stack of gems will display
+    // in the correct order.
     if (runningGame){
-        levels[currentLevel].objects = levels[currentLevel].objects.concat(copy);
+        levels[currentLevel].objects = levels[currentLevel].objects.concat(collecteGems);
     };
+};
+
+Player.prototype.checkObstacles = function(currentLevel){
+    var result = false;
+    // We need to pass the "this" variable to the functions
+    // in forEach. To do this we create the self variable.
+    var self = this;
+    levels[currentLevel].objects.forEach(function(thing){
+        if (touch(self, thing)){
+            switch (thing.type){
+                case 'obstacle':
+                    result = true; // Special case. This function will return true if object hit is an obstacle
+                    break;
+                    // TO GRADER: A return statement does not work here? It is not clear
+                    // to me how this would work within a forEach function. Any hint?
+                    // also, do we need a break statement?
+            }
+        }
+    });
     return result;
 };
 
 /* This helper function returns true if two objects are touching
 * each other and false otherwise*/
 function touch(objectA, objectB){
+    // Elements are squares in our games
+    // We first have to get the positions of the sides
+    // of the elements.
     var aX = objectA.pos.getX();
     var aY = objectA.pos.getY();
     var aXPlus = aX + objectA.size.getX();
@@ -584,7 +663,9 @@ function touch(objectA, objectB){
     var bY = objectB.pos.getY();
     var bXPlus = bX + objectB.size.getX();
     var bYPlus = bY + objectB.size.getY();
-
+    // We now compare the positions of the sides
+    // in order to find out if elements are touching
+    // or not.
     if (aX >= bX && aX <= bXPlus){
         if (aY >= bY && aY <= bYPlus){
             return true;
@@ -603,9 +684,10 @@ function touch(objectA, objectB){
 }
 
 /*---------SELECTOR CLASS-----------------------*/
-
+// This class will only be useful at the welcome page
 var Selector = function(){
     this.sprite = 'images/selector.png';
+    // Heroe index defines both the heroe choice and the position in screen
     this.heroeIndex = 1;
     this.pos = new Vector(197,60);
 }
@@ -619,8 +701,8 @@ Selector.prototype.handleInput = function(code){
     switch(code){
         case 'left':
             if (this.heroeIndex>0){
-                this.pos.setX(xPos - 117);
-                this.heroeIndex--;
+                this.pos.setX(xPos - 117); // We modify position of selector
+                this.heroeIndex--; // We decrease hero index
             };
             break;
         case 'right':
@@ -630,14 +712,16 @@ Selector.prototype.handleInput = function(code){
             };
             break;
         case 'space':
-            heroe = heroes[this.heroeIndex];
-            levels[currentLevel].objects = [];
+            // Once spaces is pressed:
+            heroe = heroes[this.heroeIndex]; // heroe is chosen
+            levels[currentLevel].objects = []; // an empty object for current level is initialized
+            // Now background and stuff is loaded in the .objects object.
             loopLevelArr(levels[currentLevel].background,levels[0].objects);
             loopLevelArr(levels[currentLevel].stuff,levels[0].objects);
-            // We set the starting position of the heroe
+            // We also set the starting position of the heroe
             heroe.pos.setX(startPos.getX());
             heroe.pos.setY(startPos.getY());
-            // Having selected the heroe, we change the state of the game
+            // Finally we change the state of the game
             welcomePage = false;
             runningGame = true;
             break;
@@ -645,14 +729,25 @@ Selector.prototype.handleInput = function(code){
             break;
     }
 }
-// We initialize a new selector, this is called in the init()
-// function
-function initializeSelector(){
-    selector = new Selector;
-}
+ // This function will be called by event listener when
+ // levelWon = True and "SPACE" is pressed
+function startNewLevel(){
+    currentLevel++; // we update currentLevel
+    // we load the level objects on the .object object
+    levels[currentLevel].objects = [];
+    loopLevelArr(levels[currentLevel].background,levels[currentLevel].objects);
+    loopLevelArr(levels[currentLevel].stuff,levels[currentLevel].objects);
+    // we set the starting position of heroe
+    heroe.pos.setX(startPos.getX());
+    heroe.pos.setY(startPos.getY());
+    // We change the state of the game
+    levelWon = false;
+    runningGame = true;
+};
+
 
 // This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
+// Player.handleInput() method.
 // The event listener for key presses behaves differently depending
 // on the "state" of the game
 document.addEventListener('keydown', function(e) {
@@ -670,18 +765,11 @@ document.addEventListener('keydown', function(e) {
         heroe.handleInput(code);
     }else if(levelWon === true){
         if (code === 'space'){
-            currentLevel++;
-            levels[currentLevel].objects = [];
-            loopLevelArr(levels[currentLevel].background,levels[currentLevel].objects);
-            loopLevelArr(levels[currentLevel].stuff,levels[currentLevel].objects);
-            heroe.pos.setX(startPos.getX());
-            heroe.pos.setY(startPos.getY());
-            levelWon = false;
-            runningGame = true;
+            startNewLevel();
         }
     }else if(gameWon === true || gameLost === true){
         if (code === 'space'){
-            location.reload();
+            location.reload(); // Page will reload when you press space
         }
     }
 });
