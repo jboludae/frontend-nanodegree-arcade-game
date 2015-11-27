@@ -11,17 +11,18 @@ var gameWon = false; // victory page is displayed
 var gameLost = false; // game over page is displayed
 
 // We implement some variables to track game parameters:
-var lives = 2; // These are the current lives
+var lives = 3; // These are the current lives
 var currentLevel = 0; // Current level
 var score = 0; // Current score
+var levelScore = 0; // Keeps track of the level score
 var heroe; // This is the 'heroe' object. Will be chosen and assigned in welcome page
 var startPos; // Vector object representing the starting position of heroe.
 var heroes; // Array of objects with the 4 different heroes available.
 var selector; // Object selector. Will be used to choose heroe in welcome page
 var gId = 0; // entities unique id#. gId will increase each time an entity is instantiated
 var MIN_BUG_SPEED = 1; // This is starting speed for the bugs
-var BUG_INT_SPEED = 280;
-var MAX_BUG_SPEED = 800; // This is the max speed for the bugs
+var BUG_INT_SPEED = 290;
+var MAX_BUG_SPEED = 600; // This is the max speed for the bugs
 
 // Three levels are kept in a dictionary of objects: 0, 1, 2
 // Each level object contains an array:
@@ -57,94 +58,93 @@ var levels = {
 };
 levels[0].background =
 [['w','w','w','w','w','w','w','w','w','w','w','w'],
-['w','s','s','s','s','s','s','w','w','w','w','w'],
-['w','s','s','s','s','s','s','w','w','w','w','w'],
-['w','s','s','s','s','s','s','w','w','w','w','w'],
-['w','g','s','g','s','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','w','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','s','s','s','s','s','s','s','s','s','s','g'],
+['w','g','g','g','g','g','g','g','s','w','w','g'],
+['w','s','s','s','s','s','s','s','s','s','s','g'],
+['w','s','g','g','g','g','g','g','g','g','g','g'],
+['w','s','s','s','g','s','g','s','g','s','s','g'],
+['w','g','s','s','s','s','s','s','s','s','g','g'],
+['w','g','g','g','g','g','g','g','g','g','g','g'],
+['w','g','w','g','g','g','g','g','g','g','w','g'],
+['w','g','g','g','g','g','g','g','g','g','g','g'],
+['w','g','w','g','g','g','g','g','g','g','w','g'],
+['w','g','g','g','g','g','g','g','g','g','g','g'],
 ['w','w','w','w','w','w','w','w','w','w','w','w']];
 
 levels[0].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
-['i','i','i','og','xx','i','i','i','i','i','i','i'],
-['i','gg','i','i','i','i','i','i','i','i','i','i'],
-['i','i','vv','i','i','i','gg','i','i','i','i','i'],
-['i','i','i','bg','i','i','i','i','i','i','i','i'],
-['i','gg','i','i','i','i','rr','i','i','i','i','i'],
-['i','tt','bg','i','hh','i','bg','i','i','i','tt','i'],
-['i','i','i','i','tt','tt','i','i','i','i','i','i'],
-['i','i','i','bg','i','i','i','i','i','i','i','i'],
-['i','i','i','i','gg','i','ts','ts','tu','i','i','i'],
-['i','i','i','i','i','el','i','i','i','i','i','i'],
-['i','og','pp','i','i','i','hh','og','i','vv','i','i'],
+['i','pp','xx','i','i','i','i','i','i','i','gg','tt'],
+['i','tt','tt','tt','tt','tt','tt','tt','i','i','i','tt'],
+['i','i','hh','i','i','i','gg','i','i','i','gg','tt'],
+['i','i','ts','ts','ts','ts','ts','ts','ts','ts','ts','tt'],
+['i','gg','i','i','rr','i','rr','i','rr','i','og','tt'],
+['i','tt','bg','i','hh','i','bg','i','i','i','tt','tt'],
+['i','i','i','i','ts','tt','tt','tt','ts','i','i','tt'],
+['i','i','i','bg','i','vv','i','i','i','i','i','tt'],
+['i','i','i','i','rr','el','ts','ts','rr','i','i','tt'],
+['i','i','i','i','i','i','i','i','i','i','i','tt'],
+['i','og','i','i','i','i','hh','i','i','vv','gg','tt'],
 ['i','i','i','i','i','i','i','i','i','i','i','i'],
 ];
-
 levels[1].background =
 [['w','w','w','w','w','w','w','w','w','w','w','w'],
-['w','s','s','s','s','s','s','w','w','w','w','w'],
-['w','s','s','s','s','s','s','w','w','w','w','w'],
-['w','s','s','s','s','s','s','w','w','w','w','w'],
-['w','g','s','g','s','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','w','w','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','w','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','s','s','s','w','w','w','s','s','s','s','g'],
+['w','s','s','s','w','w','w','g','s','s','s','g'],
+['w','s','s','s','w','w','w','g','g','g','s','g'],
+['w','w','w','s','w','s','g','g','g','g','g','g'],
+['w','w','w','s','s','s','s','g','g','g','g','g'],
+['w','w','w','s','w','s','s','g','g','g','g','g'],
+['w','w','w','g','g','g','s','g','g','g','g','g'],
+['w','w','g','g','g','w','g','g','g','g','w','g'],
+['w','g','g','g','w','w','g','g','g','w','w','g'],
+['w','g','g','w','w','w','g','g','w','w','w','g'],
+['w','g','g','g','g','g','g','g','g','g','g','g'],
 ['w','w','w','w','w','w','w','w','w','w','w','w']];
 
 levels[1].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
-['i','hh','i','og','xx','i','i','i','i','i','i','i'],
-['i','gg','i','i','i','i','i','i','i','i','i','i'],
-['i','i','i','i','i','i','gg','i','i','i','i','i'],
-['i','i','i','bg','i','i','i','i','i','i','i','i'],
-['i','gg','i','i','i','i','i','i','i','i','i','i'],
-['i','tt','bg','i','i','i','bg','i','i','i','tt','i'],
-['i','i','i','i','tt','tt','i','i','i','i','i','i'],
-['i','i','i','bg','i','i','i','i','i','i','i','i'],
-['i','i','i','i','gg','i','i','i','i','i','i','i'],
-['i','tt','i','i','i','el','i','i','i','pp','i','i'],
-['i','og','i','i','i','i','i','og','i','vv','i','i'],
+['i','pp','xx','i','i','i','i','i','gg','i','i','tt'],
+['i','gg','hh','i','i','i','i','i','hh','bg','i','tt'],
+['i','i','gg','i','i','i','i','tt','tt','tt','i','tt'],
+['i','i','i','gg','i','i','i','rr','i','i','i','tt'],
+['i','i','i','vv','gg','i','i','i','i','i','i','tt'],
+['i','i','i','i','i','i','i','i','i','i','tt','tt'],
+['i','i','i','i','i','i','i','og','vv','i','i','tt'],
+['i','i','i','i','i','i','i','vv','bg','rr','i','tt'],
+['i','i','i','i','i','i','i','el','rr','i','i','tt'],
+['i','vv','i','i','i','i','vv','rr','i','i','i','tt'],
+['i','bg','i','i','i','i','i','i','i','i','og','tt'],
 ['i','i','i','i','i','i','i','i','i','i','i','i'],
 ];
 
 levels[2].background =
 [['w','w','w','w','w','w','w','w','w','w','w','w'],
-['w','s','s','s','s','s','s','w','w','w','w','w'],
-['w','s','s','s','s','s','s','w','w','w','w','w'],
-['w','s','s','s','s','s','s','w','w','w','w','w'],
-['w','g','s','g','s','g','g','g','g','w','w','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','w','g','g','w','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
-['w','g','g','g','g','g','g','g','g','g','w','w'],
-['w','g','g','g','g','g','g','g','g','g','g','w'],
+['w','s','s','s','s','s','s','s','s','s','s','g'],
+['w','g','g','g','g','g','g','g','s','w','w','g'],
+['w','s','s','s','s','s','s','s','s','s','s','g'],
+['w','s','g','g','g','g','g','g','g','g','g','g'],
+['w','s','s','s','g','s','g','s','g','s','s','g'],
+['w','g','s','s','s','s','s','s','s','s','g','g'],
+['w','g','g','g','g','g','g','g','g','g','g','g'],
+['w','g','w','g','g','g','g','g','g','g','g','g'],
+['w','g','g','g','g','g','g','g','g','g','g','g'],
+['w','g','w','g','g','g','g','g','g','g','g','g'],
+['w','g','g','g','g','g','g','g','g','g','g','g'],
 ['w','w','w','w','w','w','w','w','w','w','w','w']];
 
 levels[2].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
-['i','i','i','og','xx','i','i','i','i','i','i','i'],
-['i','gg','i','i','i','i','i','i','i','i','i','i'],
-['i','i','tt','tt','tt','i','gg','i','i','i','i','i'],
-['i','i','i','tt','i','hh','i','i','i','i','i','i'],
-['i','gg','i','i','i','i','i','i','i','i','i','i'],
-['i','tt','bg','i','hh','i','bg','i','i','i','tt','i'],
-['i','i','i','i','tt','tt','i','i','i','i','i','i'],
-['i','i','i','bg','i','i','i','i','hh','i','i','i'],
-['i','i','i','i','gg','i','i','i','i','i','i','i'],
-['i','i','i','i','i','el','i','i','i','i','i','i'],
-['i','og','pp','hh','i','i','i','og','i','vv','i','i'],
+['i','pp','xx','i','i','i','i','i','i','i','gg','tt'],
+['i','tt','tt','tt','tt','tt','tt','tt','i','i','i','tt'],
+['i','i','hh','i','i','i','gg','i','i','i','gg','tt'],
+['i','ts','ts','i','ts','ts','ts','ts','ts','ts','ts','tt'],
+['i','gg','hh','i','i','i','i','i','i','i','og','tt'],
+['i','tt','tt','tt','tt','tt','tt','tt','tt','tt','i','tt'],
+['i','i','i','i','ts','tt','tt','tt','ts','rr','i','tt'],
+['i','og','i','bg','i','vv','i','i','rr','i','i','tt'],
+['i','i','i','i','rr','el','ts','rr','i','i','i','tt'],
+['i','i','i','i','i','i','rr','i','i','i','i','tt'],
+['i','vv','i','i','i','i','hh','i','vv','vv','gg','tt'],
 ['i','i','i','i','i','i','i','i','i','i','i','i'],
 ];
 
@@ -349,9 +349,9 @@ Bug.prototype.update = function(dt) {
     // Bugs get angrier with time. They start slow, grow exponentially up to BUG_INT_SPEED
     // and then their speed increases linearly up to MAX_BUG_SPEED
     if (this.speed > 0){
-        this.speed = this.speed < BUG_INT_SPEED ? this.speed += dt*100 : this.speed = this.speed < MAX_BUG_SPEED ? this.speed += dt*5:this.speed;
+        this.speed = this.speed < BUG_INT_SPEED ? this.speed += dt*100 : this.speed = this.speed < MAX_BUG_SPEED ? this.speed += dt*9:this.speed;
     }else{
-        this.speed = this.speed > -BUG_INT_SPEED ? this.speed -= dt*100 : this.speed = this.speed > -MAX_BUG_SPEED ? this.speed -= dt*5: this.speed;
+        this.speed = this.speed > -BUG_INT_SPEED ? this.speed -= dt*100 : this.speed = this.speed > -MAX_BUG_SPEED ? this.speed -= dt*9: this.speed;
     }
     var distanceVector;
     // We convert distance to a vector object:
@@ -585,16 +585,16 @@ Player.prototype.checkCollisions = function(currentLevel){
                     // to gameLost
                         gameLost = true;
                         runningGame = false;
+                    }else{
+                        startNewLevel();
                     }
-                    self.pos.setX(startPos.getX());
-                    self.pos.setY(startPos.getY());
                     break;
                 case 'gem':
                     thing.pos = self.pos;
                     if (thing.collected === false){
                         thing.gemPosition = self.gemStack;
                         self.gemStack -= 10;
-                        score += thing.scoreIncrease;
+                        levelScore += thing.scoreIncrease;
                         collecteGems.push(thing);// collecteGems will be stored in an array
                     }
                     thing.collected = true; // we change the state of the gem
@@ -604,10 +604,10 @@ Player.prototype.checkCollisions = function(currentLevel){
                     thing.pos.setX(100000); // we set position off-screen so cannot be collected again
                     break;
                 case 'princess':
-                    score += 1000; // score is increased in 1000 when princess is visited
-                    currentLevel++;
+                    levelScore += 1000; // score is increased in 1000 when princess is visited
+                    score += levelScore; // we update the level score
                     heroe.gemStack = 0; // The gem stack is reset to 0
-                    if (currentLevel<3){
+                    if (currentLevel<2){
                         levelWon = true;
                         runningGame = false;
                     }else{
@@ -714,13 +714,7 @@ Selector.prototype.handleInput = function(code){
         case 'space':
             // Once spaces is pressed:
             heroe = heroes[this.heroeIndex]; // heroe is chosen
-            levels[currentLevel].objects = []; // an empty object for current level is initialized
-            // Now background and stuff is loaded in the .objects object.
-            loopLevelArr(levels[currentLevel].background,levels[0].objects);
-            loopLevelArr(levels[currentLevel].stuff,levels[0].objects);
-            // We also set the starting position of the heroe
-            heroe.pos.setX(startPos.getX());
-            heroe.pos.setY(startPos.getY());
+            startNewLevel();
             // Finally we change the state of the game
             welcomePage = false;
             runningGame = true;
@@ -732,7 +726,7 @@ Selector.prototype.handleInput = function(code){
  // This function will be called by event listener when
  // levelWon = True and "SPACE" is pressed
 function startNewLevel(){
-    currentLevel++; // we update currentLevel
+    levelScore = 0;
     // we load the level objects on the .object object
     levels[currentLevel].objects = [];
     loopLevelArr(levels[currentLevel].background,levels[currentLevel].objects);
@@ -765,6 +759,7 @@ document.addEventListener('keydown', function(e) {
         heroe.handleInput(code);
     }else if(levelWon === true){
         if (code === 'space'){
+            currentLevel++;
             startNewLevel();
         }
     }else if(gameWon === true || gameLost === true){

@@ -26,8 +26,6 @@
         lastTime;
 
     // We draw the canvas
-    canvas.style.border = "1px solid black";
-    canvas.style.borderRadius = "5px";
     canvas.width = 606;
     canvas.height = 606;
     doc.body.appendChild(canvas);
@@ -44,13 +42,16 @@
          * would be the same for everyone (regardless of how fast their
          * computer is) - hurray time!
          */
+         /*
+         * We will modify the behaviour of the main() function depending on the state
+         * of the game.
+         */
         if (runningGame === true){
             var now = Date.now(),
             dt = (now - lastTime) / 1000.0;
-            /*Save the current transformation state
-            * and scale everything 0.5 times. This will allow
-            *us to have smaller graphics without having to scale
-            *images*/
+            /* We now save the current transformation state
+            * and scale everything by 0.5. This will allow
+            * us to have smaller graphics */
             ctx.save();
             ctx.scale(0.5,0.5);
             /* Call our update/render functions, pass along the time delta to
@@ -58,7 +59,6 @@
              */
             update(dt);
             render();
-
             /* Set our lastTime variable which is used to determine the time delta
              * for the next time this function is called.
              */
@@ -67,13 +67,13 @@
             *infinite loop*/
             ctx.restore();
         }else if(welcomePage === true){
-            displayWelcome();
+            displayWelcome(); // We display the welcome page
         }else if(levelWon === true){
-            displayWelcome();
+            displayLevelWon(); // We display a current score
         }else if(gameWon === true){
-            displayWelcome();
+            displayGameWon(); // We display end page. You beat the game
         }else if(gameLost === true){
-            displayWelcome();
+            displayGameOver(); // Game is over
         }
         /* Use the browser's requestAnimationFrame function to call this
         * function again as soon as the browser is able to draw another frame.
@@ -113,46 +113,79 @@
     ctx.fillText("Bring gems to the princess.", 303, 320);
     ctx.fillText("Avoid water.", 303, 360);
     ctx.fillText("Avoid the bastards.", 303, 400);
-    ctx.fillText("", 303, 440);
+    ctx.fillText("Be fast.", 303, 440);
     ctx.font = "40px Helvetica";
     ctx.textAlign = "center";
     ctx.fillText("Press SPACE to start", 303, 515);
     }
 
+    function displayLevelWon() {
+    // We first clean the background of the whole canvas
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // We display welcome text and instructions
+    ctx.font = "28px Helvetica";
+    ctx.fillStyle = "white";
+    ctx.shadowColor = "black"
+    ctx.shadowBlur = 8;
+    ctx.font = "40px Helvetica";
+    ctx.textAlign = "center";
+    ctx.fillText("Congratulations!!", 303, 300);
+    ctx.fillText("Level "+currentLevel+" score is: "+levelScore, 303, 375);
+    ctx.fillText("Total score is: " + score, 303, 450);
+    ctx.fillText("Press SPACE to start", 303, 525);
+    ctx.shadowColor = null;
+    ctx.shadowBlur = 0;
+    }
+    function displayGameWon() {
+    // We first clean the background of the whole canvas
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // We display welcome text and instructions
+    ctx.font = "28px Helvetica";
+    ctx.fillStyle = "white";
+    ctx.shadowColor = "black"
+    ctx.shadowBlur = 8;
+    ctx.font = "40px Helvetica";
+    ctx.textAlign = "center";
+    ctx.fillText("The princess got it gems!!", 303, 350);
+    ctx.fillText("Your final score is: "+score, 303, 425);
+    ctx.fillText("Press SPACE to start again", 303, 500);
+    ctx.shadowColor = null;
+    ctx.shadowBlur = 0;
+    }
+
+    function displayGameOver() {
+    // We first clean the background of the whole canvas
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // We display welcome text and instructions
+    ctx.font = "28px Helvetica";
+    ctx.fillStyle = "white";
+    ctx.shadowColor = "black"
+    ctx.shadowBlur = 8;
+    ctx.font = "40px Helvetica";
+    ctx.textAlign = "center";
+    ctx.fillText("GAME OVER!!", 303, 350);
+    ctx.fillText("Press SPACE to start again", 303, 425);
+    ctx.shadowColor = null;
+    ctx.shadowBlur = 0;
+    }
+
     /* This function is called by main (our game loop) and itself calls all
-     * of the functions which may need to update entity's data. Based on how
-     * you implement your collision detection (when two entities occupy the
-     * same space, for instance when your character should die), you may find
-     * the need to add an additional function call here. For now, we've left
-     * it commented out - you may or may not want to implement this
-     * functionality this way (you could just implement collision detection
-     * on the entities themselves within your app.js file).
+     * of the functions which may need to update entity's data.
      */
     function update(dt) {
-        updateEntities(dt);
-        checkCollisions();
-        checkGameWon();
-    }
-
-    function checkCollisions(){
-        heroe.checkCollisions(currentLevel);
-    }
-
-    function checkGameWon(){
-        if (player.y < 20){
-            player.x = 404;
-            player.y = 644;
-            score = score + 50
-            console.log(score)
-        }
+        updateEntities(dt);// We update the position of entities
+        heroe.checkCollisions(currentLevel);// We check collisions
     }
 
     /* This is called by the update function  and loops through all of the
      * objects within your allEnemies array as defined in app.js and calls
-     * their update() methods. It will then call the update function for your
-     * player object. These update methods should focus purely on updating
-     * the data/properties related to  the object. Do your drawing in your
-     * render methods.
+     * their update() methods.
      */
     function updateEntities(dt) {
         levels[currentLevel].objects.forEach(function(thing) {
@@ -215,8 +248,12 @@
         // We draw the score in the top right of the screen
         ctx.font = "56px Helvetica";
         ctx.fillStyle = "white";
-        ctx.fillText("Score: "+score, 850, 100);
-        ctx.fillText("Lives: "+lives, 240, 100);
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 8;
+        ctx.fillText("Level score: "+levelScore, 950, 100);
+        ctx.fillText("Lives: "+lives, 140, 100);
+        ctx.fillText("Level: "+ (currentLevel+1), 140, 1085);
+        ctx.shadowBlur = 0;
         renderEntities();
     }
 
@@ -240,12 +277,10 @@
                 thing.render();
             }
         });
-        heroe.render()
+        heroe.render() // Finally, we render the heroe
     }
 
-    /* Go ahead and load all of the images we know we're going to need to
-     * draw our game level. Then set init as the callback method, so that when
-     * all of these images are properly loaded our game will start.
+    /* We load here all images that will be needed
      */
     Resources.load([
         'images/stone-block.png',
