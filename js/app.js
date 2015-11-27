@@ -22,12 +22,12 @@ var gId = 0; // entities unique id#. gId will increase each time an entity is in
 
 /*---------GLOBAL CONSTANTS-----------------------*/
 // Global
-var levels = {
+var LEVELS = {
     0: {},
     1: {},
     2: {},
 };
-levels[0].background =
+LEVELS[0].background =
 [['w','w','w','w','w','w','w','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
@@ -42,7 +42,7 @@ levels[0].background =
 ['w','g','g','g','g','g','g','g','g','g','g','w'],
 ['w','w','w','w','w','w','w','w','w','w','w','w']];
 
-levels[0].stuff =
+LEVELS[0].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
 ['i','i','i','og','x','i','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
@@ -58,7 +58,7 @@ levels[0].stuff =
 ['i','i','i','i','i','i','i','i','i','i','i','i'],
 ];
 
-levels[1].background =
+LEVELS[1].background =
 [['w','w','w','w','w','w','w','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
@@ -73,7 +73,7 @@ levels[1].background =
 ['w','g','g','g','g','g','g','g','g','g','g','w'],
 ['w','w','w','w','w','w','w','w','w','w','w','w']];
 
-levels[1].stuff =
+LEVELS[1].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
 ['i','h','i','og','x','i','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
@@ -89,7 +89,7 @@ levels[1].stuff =
 ['i','i','i','i','i','i','i','i','i','i','i','i'],
 ];
 
-levels[2].background =
+LEVELS[2].background =
 [['w','w','w','w','w','w','w','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
 ['w','s','s','s','s','s','s','w','w','w','w','w'],
@@ -104,7 +104,7 @@ levels[2].background =
 ['w','g','g','g','g','g','g','g','g','g','g','w'],
 ['w','w','w','w','w','w','w','w','w','w','w','w']];
 
-levels[2].stuff =
+LEVELS[2].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
 ['i','i','i','og','x','i','i','i','i','i','i','i'],
 ['i','gg','i','i','i','i','i','i','i','i','i','i'],
@@ -271,7 +271,7 @@ Bug.prototype.update = function(dt) {
         distanceVector = new Vector(distance, 0);
     }
     this.pos.sum(distanceVector);
-    levels[currentLevel].objects.forEach(function(thing){
+    LEVELS[currentLevel].objects.forEach(function(thing){
         if (thing.id !== self.id)
             if (thing.type === "obstacle" || thing.type === "enemy" || thing.type === "princess"){
                 if (touch(self,thing)){
@@ -404,7 +404,7 @@ Player.prototype.checkCollisions = function(currentLevel){
     // We need to pass the "this" variable to the functions
     // in forEach. To do this we create the self variable.
     var self = this;
-    levels[currentLevel].objects.forEach(function(thing){
+    LEVELS[currentLevel].objects.forEach(function(thing){
         if (touch(self, thing)){
             switch (thing.type){
                 // If player touches enemy, we remove a live
@@ -454,7 +454,7 @@ Player.prototype.checkCollisions = function(currentLevel){
     //This is a trick. Collected elements will be put at the end of the object list
     // That way they are drawn in the proper order.
     if (runningGame){
-        levels[currentLevel].objects = levels[currentLevel].objects.concat(copy);
+        LEVELS[currentLevel].objects = LEVELS[currentLevel].objects.concat(copy);
     };
     return result;
 };
@@ -518,9 +518,9 @@ Selector.prototype.handleInput = function(code){
             break;
         case 'space':
             heroe = heroes[this.heroeIndex];
-            levels[currentLevel].objects = [];
-            loopLevelArr(levels[currentLevel].background,levels[0].objects);
-            loopLevelArr(levels[currentLevel].stuff,levels[0].objects);
+            LEVELS[currentLevel].objects = [];
+            loopLevelArr(LEVELS[currentLevel].background,LEVELS[0].objects);
+            loopLevelArr(LEVELS[currentLevel].stuff,LEVELS[0].objects);
             // We set the starting position of the heroe
             heroe.pos.setX(startPos.getX());
             heroe.pos.setY(startPos.getY());
@@ -558,9 +558,9 @@ document.addEventListener('keydown', function(e) {
     }else if(levelWon === true){
         if (code === 'space'){
             currentLevel++;
-            levels[currentLevel].objects = [];
-            loopLevelArr(levels[currentLevel].background,levels[currentLevel].objects);
-            loopLevelArr(levels[currentLevel].stuff,levels[currentLevel].objects);
+            LEVELS[currentLevel].objects = [];
+            loopLevelArr(LEVELS[currentLevel].background,LEVELS[currentLevel].objects);
+            loopLevelArr(LEVELS[currentLevel].stuff,LEVELS[currentLevel].objects);
             heroe.pos.setX(startPos.getX());
             heroe.pos.setY(startPos.getY());
             levelWon = false;
@@ -574,7 +574,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 /* The following collection of arrays provide several "maps" that will be
-loaded by the engine as we progress through the levels */
+loaded by the engine as we progress through the LEVELS */
 
 
 

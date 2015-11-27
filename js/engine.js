@@ -155,7 +155,7 @@
      * render methods.
      */
     function updateEntities(dt) {
-        levels[currentLevel].objects.forEach(function(thing) {
+        LEVELS[currentLevel].objects.forEach(function(thing) {
             thing.update(dt);
         });
     }
@@ -178,10 +178,10 @@
             "r": 'images/Rock.png',
             "g": "images/grass-block.png"
         }
-        /* We inititialize a base map. We will use mapLevels to feed this map
+        /* We inititialize a base map. We will use mapLEVELS to feed this map
         and charToImages to code characters to actual images */
         var baseMap = [];
-        levels[currentLevel].background.forEach(function(row){
+        LEVELS[currentLevel].background.forEach(function(row){
             var line = [];
             row.forEach(function(char){
                 var element = charToImages[char];
@@ -191,8 +191,8 @@
         });
 
 
-        var numRows = levels[currentLevel].background.length,
-            numCols = levels[currentLevel].background[0].length,
+        var numRows = LEVELS[currentLevel].background.length,
+            numCols = LEVELS[currentLevel].background[0].length,
             row, col;
 
         /* Loop through the number of rows and columns we've defined above
@@ -228,7 +228,7 @@
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
-        levels[currentLevel].objects.forEach(function(thing) {
+        LEVELS[currentLevel].objects.forEach(function(thing) {
             thing.render();
         });
         heroe.render()
