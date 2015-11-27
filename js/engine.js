@@ -46,9 +46,9 @@
          * We will modify the behaviour of the main() function depending on the state
          * of the game.
          */
+        var now = Date.now(),
+        dt = (now - lastTime) / 1000.0;
         if (runningGame === true){
-            var now = Date.now(),
-            dt = (now - lastTime) / 1000.0;
             /* We now save the current transformation state
             * and scale everything by 0.5. This will allow
             * us to have smaller graphics */
@@ -62,7 +62,6 @@
             /* Set our lastTime variable which is used to determine the time delta
              * for the next time this function is called.
              */
-            lastTime = now;
             /* We restore the context so it will not re-scale in an
             *infinite loop*/
             ctx.restore();
@@ -75,6 +74,7 @@
         }else if(gameLost === true){
             displayGameOver(); // Game is over
         }
+        lastTime = now;
         /* Use the browser's requestAnimationFrame function to call this
         * function again as soon as the browser is able to draw another frame.
         */
@@ -250,7 +250,7 @@
         ctx.fillStyle = "white";
         ctx.shadowColor = "black";
         ctx.shadowBlur = 8;
-        ctx.fillText("Level score: "+levelScore, 950, 100);
+        ctx.fillText("Level score: "+levelScore, 880, 100);
         ctx.fillText("Lives: "+lives, 140, 100);
         ctx.fillText("Level: "+ (currentLevel+1), 140, 1085);
         ctx.shadowBlur = 0;

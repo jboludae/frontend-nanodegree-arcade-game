@@ -73,7 +73,7 @@ levels[0].background =
 
 levels[0].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
-['i','pp','xx','i','i','i','i','i','i','i','gg','tt'],
+['i','pp','i','i','xx','i','i','i','i','i','gg','tt'],
 ['i','tt','tt','tt','tt','tt','tt','tt','i','i','i','tt'],
 ['i','i','hh','i','i','i','gg','i','i','i','gg','tt'],
 ['i','i','ts','ts','ts','ts','ts','ts','ts','ts','ts','tt'],
@@ -103,7 +103,7 @@ levels[1].background =
 
 levels[1].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
-['i','pp','xx','i','i','i','i','i','gg','i','i','tt'],
+['i','pp','i','xx','i','i','i','i','gg','i','i','tt'],
 ['i','gg','hh','i','i','i','i','i','hh','bg','i','tt'],
 ['i','i','gg','i','i','i','i','tt','tt','tt','i','tt'],
 ['i','i','i','gg','i','i','i','rr','i','i','i','tt'],
@@ -134,7 +134,7 @@ levels[2].background =
 
 levels[2].stuff =
 [['i','i','i','i','i','i','i','i','i','i','i','i'],
-['i','pp','xx','i','i','i','i','i','i','i','gg','tt'],
+['i','pp','i','i','i','xx','i','i','i','i','gg','tt'],
 ['i','tt','tt','tt','tt','tt','tt','tt','i','i','i','tt'],
 ['i','i','hh','i','i','i','gg','i','i','i','gg','tt'],
 ['i','ts','ts','i','ts','ts','ts','ts','ts','ts','ts','tt'],
@@ -606,7 +606,6 @@ Player.prototype.checkCollisions = function(currentLevel){
                 case 'princess':
                     levelScore += 1000; // score is increased in 1000 when princess is visited
                     score += levelScore; // we update the level score
-                    heroe.gemStack = 0; // The gem stack is reset to 0
                     if (currentLevel<2){
                         levelWon = true;
                         runningGame = false;
@@ -727,6 +726,7 @@ Selector.prototype.handleInput = function(code){
  // levelWon = True and "SPACE" is pressed
 function startNewLevel(){
     levelScore = 0;
+    heroe.gemStack = 0; // The gem stack is reset to 0
     // we load the level objects on the .object object
     levels[currentLevel].objects = [];
     loopLevelArr(levels[currentLevel].background,levels[currentLevel].objects);
