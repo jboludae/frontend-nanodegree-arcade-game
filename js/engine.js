@@ -299,7 +299,7 @@
         'images/char-horn-girl.png',
         'images/char-cat-girl.png',
         'images/char-princess-girl.png',
-        'images/selector.png',
+        'images/Selector.png',
         'images/gemGreen.png',
         'images/gemBlue.png',
         'images/gemOrange.png',
